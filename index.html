@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Derivatives Terminal v3.0</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000000;
+            color: #FFFFFF;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 8px;
+            overflow-y: auto;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background-color: #0a0a0a;
+            border: 1px solid #FF9900;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+        }
+
+        .header-left {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .title {
+            color: #FF9900;
+            font-weight: bold;
+        }
+
+        .label {
+            color: #00FFFF;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            animation: blink 1s infinite;
+        }
+
+        .status-indicator.live {
+            background-color: #00FF41;
+        }
+
+        .status-indicator.stale {
+            background-color: #FFA500;
+        }
+
+        .status-indicator.error {
+            background-color: #FF3131;
+        }
+
+        .status-text {
+            font-weight: bold;
+            font-size: 9px;
+        }
+
+        .status-text.live {
+            color: #00FF41;
+        }
+
+        .status-text.stale {
+            color: #FFA500;
+        }
+
+        .status-text.error {
+            color: #FF3131;
+        }
+
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0.3; }
+        }
+
+        .price-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .price-box {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            padding: 8px;
+            font-size: 10px;
+        }
+
+        .ticker-name {
+            color: #FF9900;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .price-value {
+            font-weight: bold;
+        }
+
+        .price-up {
+            color: #00FF41;
+        }
+
+        .price-down {
+            color: #FF3131;
+        }
+
+        .price-neutral {
+            color: #FFFF00;
+        }
+
+        .secondary-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .volume-info {
+            font-size: 9px;
+            color: #888;
+        }
+
+        .signals-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .signal-box {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            padding: 12px;
+            font-size: 11px;
+        }
+
+        .signal-title {
+            color: #FF9900;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .signal-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .signal-buy {
+            color: #00FF41;
+        }
+
+        .signal-sell {
+            color: #FF3131;
+        }
+
+        .signal-hold {
+            color: #FFFF00;
+        }
+
+        .confidence {
+            color: #888;
+            font-size: 10px;
+            margin-top: 4px;
+        }
+
+        .breakdown {
+            font-size: 9px;
+            color: #666;
+            border-top: 1px solid #333;
+            padding-top: 6px;
+            margin-top: 8px;
+        }
+
+        .breakdown-item {
+            margin-bottom: 2px;
+        }
+
+        .geo-risk-score {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .geo-risk-high {
+            color: #FF3131;
+        }
+
+        .geo-risk-med {
+            color: #FFA500;
+        }
+
+        .geo-risk-low {
+            color: #00FF41;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background-color: #222;
+            margin-top: 4px;
+            position: relative;
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .tech-box {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            padding: 10px;
+            font-size: 9px;
+        }
+
+        .tech-title {
+            color: #FF9900;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .tech-ticker {
+            color: #00FFFF;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .tech-value {
+            color: #666;
+            font-size: 8px;
+            margin-bottom: 4px;
+        }
+
+        .moving-avg-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .moving-avg-box {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            padding: 8px;
+            font-size: 9px;
+        }
+
+        .chart-container {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            padding: 12px;
+            margin-bottom: 8px;
+            height: 300px;
+        }
+
+        .chart-title {
+            color: #FF9900;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 250px;
+        }
+
+        .signal-log {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+
+        .log-title {
+            color: #FF9900;
+            font-weight: bold;
+            margin-bottom: 6px;
+            font-size: 11px;
+        }
+
+        .log-content {
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 9px;
+        }
+
+        .log-entry {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 3px;
+            padding-bottom: 2px;
+            border-bottom: 1px solid #222;
+        }
+
+        .log-time {
+            color: #00FFFF;
+            min-width: 60px;
+        }
+
+        .log-type {
+            min-width: 70px;
+            font-weight: bold;
+        }
+
+        .log-type.buy {
+            color: #00FF41;
+        }
+
+        .log-type.sell {
+            color: #FF3131;
+        }
+
+        .log-type.technical {
+            color: #FFA500;
+        }
+
+        .log-type.geo {
+            color: #FF9900;
+        }
+
+        .log-type.confirmation {
+            color: #00FFFF;
+        }
+
+        .log-type.divergence {
+            color: #00FFFF;
+        }
+
+        .log-message {
+            color: #CCC;
+            flex: 1;
+        }
+
+        .news-ticker {
+            background-color: #0a0a0a;
+            border: 1px solid #FF9900;
+            padding: 6px 8px;
+            font-size: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+            white-space: nowrap;
+        }
+
+        .news-label {
+            color: #FF9900;
+            font-weight: bold;
+            margin-right: 12px;
+            display: inline-block;
+        }
+
+        .news-content {
+            display: inline-block;
+            white-space: nowrap;
+            color: #FFFFFF;
+            animation: scroll 60s linear infinite;
+        }
+
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .footer {
+            font-size: 8px;
+            color: #666;
+            text-align: center;
+            padding: 8px;
+            border-top: 1px solid #333;
+        }
+
+        .footer-ric {
+            color: #00FFFF;
+        }
+
+        .button {
+            padding: 4px 8px;
+            background-color: #FF9900;
+            color: #000;
+            border: 1px solid #FF9900;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .button:hover {
+            background-color: #FFAA00;
+        }
+
+        .update-time {
+            color: #888;
+            font-size: 9px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FF9900;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FFAA00;
+        }
+
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+            font-size: 8px;
+        }
+
+        .heatmap-cell {
+            background-color: #1a1a1a;
+            padding: 4px;
+            border: 1px solid #333;
+        }
+
+        .heatmap-label {
+            color: #666;
+        }
+
+        .heatmap-value {
+            font-weight: bold;
+        }
+
+        .correlation-positive {
+            color: #00FF41;
+        }
+
+        .correlation-negative {
+            color: #FF3131;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <span class="title">ENERGY DERIVATIVES TERMINAL v3.0 LIVE</span>
+                <span class="label">SESSION: NEW YORK</span>
+                <span class="label">MARKET: OPEN</span>
+            </div>
+            <div class="header-right">
+                <span class="label" id="clock">00:00:00</span>
+                <div>
+                    <span class="status-indicator live" id="statusIndicator"></span>
+                    <span class="status-text live" id="statusText">LIVE</span>
+                </div>
+                <span class="update-time" id="updateTime"></span>
+                <button class="button" id="historyBtn">HISTORY</button>
+            </div>
+        </div>
+
+        <!-- Price Strip -->
+        <div class="price-grid">
+            <div class="price-box">
+                <div class="ticker-name">GUSH</div>
+                <div class="price-row">
+                    <span>$<span id="price-GUSH">0.00</span></span>
+                    <span class="price-up" id="change-GUSH">+0.00 (0.00%)</span>
+                </div>
+                <div class="secondary-info">
+                    <span>H: $<span id="high-GUSH">0.00</span></span>
+                    <span>L: $<span id="low-GUSH">0.00</span></span>
+                </div>
+                <div class="volume-info">Vol: <span id="vol-GUSH">0.0</span>M</div>
+            </div>
+            <div class="price-box">
+                <div class="ticker-name">DRIP</div>
+                <div class="price-row">
+                    <span>$<span id="price-DRIP">0.00</span></span>
+                    <span class="price-up" id="change-DRIP">+0.00 (0.00%)</span>
+                </div>
+                <div class="secondary-info">
+                    <span>H: $<span id="high-DRIP">0.00</span></span>
+                    <span>L: $<span id="low-DRIP">0.00</span></span>
+                </div>
+                <div class="volume-info">Vol: <span id="vol-DRIP">0.0</span>M</div>
+            </div>
+            <div class="price-box">
+                <div class="ticker-name">XOP</div>
+                <div class="price-row">
+                    <span>$<span id="price-XOP">0.00</span></span>
+                    <span class="price-up" id="change-XOP">+0.00 (0.00%)</span>
+                </div>
+                <div class="secondary-info">
+                    <span>H: $<span id="high-XOP">0.00</span></span>
+                    <span>L: $<span id="low-XOP">0.00</span></span>
+                </div>
+                <div class="volume-info">Vol: <span id="vol-XOP">0.0</span>M</div>
+            </div>
+            <div class="price-box">
+                <div class="ticker-name">WTI (USO)</div>
+                <div class="price-row">
+                    <span>$<span id="price-USO">0.00</span></span>
+                    <span class="price-up" id="change-USO">+0.00 (0.00%)</span>
+                </div>
+                <div class="secondary-info">
+                    <span>H: $<span id="high-USO">0.00</span></span>
+                    <span>L: $<span id="low-USO">0.00</span></span>
+                </div>
+                <div class="volume-info">Vol: <span id="vol-USO">0.0</span>M</div>
+            </div>
+        </div>
+
+        <!-- Signals and Geo Risk -->
+        <div class="signals-grid">
+            <div class="signal-box">
+                <div class="signal-title">GUSH SIGNAL</div>
+                <div class="signal-value signal-hold" id="gush-signal">HOLD</div>
+                <div class="confidence">Confidence: <span id="gush-confidence">0</span>%</div>
+                <div class="confidence">Score: <span id="gush-score">50</span>/100</div>
+                <div class="breakdown">
+                    <div class="breakdown-item">RSI: <span id="gush-rsi-score">50</span>% (25%)</div>
+                    <div class="breakdown-item">MACD: <span id="gush-macd-score">50</span>% (25%)</div>
+                    <div class="breakdown-item">WTI Mom: <span id="gush-wti-score">50</span>% (20%)</div>
+                    <div class="breakdown-item">XOP Conf: <span id="gush-xop-score">50</span>% (15%)</div>
+                    <div class="breakdown-item">GeoRisk: <span id="gush-geo-score">50</span>% (15%)</div>
+                </div>
+            </div>
+
+            <div class="signal-box">
+                <div class="signal-title">DRIP SIGNAL</div>
+                <div class="signal-value signal-hold" id="drip-signal">HOLD</div>
+                <div class="confidence">Confidence: <span id="drip-confidence">0</span>%</div>
+                <div class="confidence">Score: <span id="drip-score">50</span>/100</div>
+                <div class="breakdown">
+                    <div class="breakdown-item">RSI: <span id="drip-rsi-score">50</span>% (25%)</div>
+                    <div class="breakdown-item">MACD: <span id="drip-macd-score">50</span>% (25%)</div>
+                    <div class="breakdown-item">WTI Mom: <span id="drip-wti-score">50</span>% (20%)</div>
+                    <div class="breakdown-item">XOP Conf: <span id="drip-xop-score">50</span>% (15%)</div>
+                    <div class="breakdown-item">GeoRisk: <span id="drip-geo-score">50</span>% (15%)</div>
+                </div>
+            </div>
+
+            <div class="signal-box">
+                <div class="signal-title">GEO RISK MONITOR</div>
+                <div class="geo-risk-score geo-risk-med" id="geo-risk-value">62</div>
+                <div class="progress-bar">
+                    <div class="progress-fill geo-risk-med" id="geo-risk-fill" style="width: 62%"></div>
+                </div>
+                <div class="breakdown" style="margin-top: 8px;">
+                    <div class="breakdown-item" id="geo-factor-1">Middle East Tension: HIGH</div>
+                    <div class="breakdown-item" id="geo-factor-2">OPEC+ Compliance: MED</div>
+                    <div class="breakdown-item" id="geo-factor-3">Russia/Ukraine: MED</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical Indicators -->
+        <div class="tech-grid">
+            <div class="tech-box">
+                <div class="tech-title">TECHNICAL INDICATORS</div>
+                <div class="tech-ticker">GUSH</div>
+                <div class="tech-value">RSI: <span id="tech-gush-rsi">0.0</span></div>
+                <div class="tech-value">MACD: <span id="tech-gush-macd">0.000</span></div>
+                <div class="tech-value">Signal: <span id="tech-gush-signal">0.000</span></div>
+                <div class="tech-value">BB Pos: <span id="tech-gush-bb">50</span>%</div>
+                <div class="tech-ticker" style="margin-top: 8px;">DRIP</div>
+                <div class="tech-value">RSI: <span id="tech-drip-rsi">0.0</span></div>
+                <div class="tech-value">MACD: <span id="tech-drip-macd">0.000</span></div>
+                <div class="tech-value">Signal: <span id="tech-drip-signal">0.000</span></div>
+                <div class="tech-value">BB Pos: <span id="tech-drip-bb">50</span>%</div>
+            </div>
+
+            <div class="tech-box">
+                <div class="tech-title">WTI/XOP VERIFY</div>
+                <div style="color: #00FFFF; font-size: 10px; font-weight: bold;">Correlation Status</div>
+                <div id="correlation-status" style="color: #00FF41; font-size: 11px; font-weight: bold; margin-top: 4px;">CONFIRMED</div>
+                <div style="font-size: 8px; color: #666; border-top: 1px solid #333; padding-top: 6px; margin-top: 8px;">
+                    <div style="margin-bottom: 4px;"><span style="color: #00FFFF;">WTIâGUSH:</span> 0.870</div>
+                    <div style="margin-bottom: 4px;"><span style="color: #00FFFF;">WTIâDRIP:</span> -0.850</div>
+                    <div><span style="color: #00FFFF;">XOPâGUSH:</span> 0.920</div>
+                </div>
+            </div>
+
+            <div class="tech-box">
+                <div class="tech-title">CORRELATION MATRIX</div>
+                <div class="heatmap-grid">
+                    <div class="heatmap-cell">
+                        <div class="heatmap-label">GUSH-DRIP</div>
+                        <div class="heatmap-value correlation-negative">-0.94</div>
+                    </div>
+                    <div class="heatmap-cell">
+                        <div class="heatmap-label">GUSH-WTI</div>
+                        <div class="heatmap-value correlation-positive">0.87</div>
+                    </div>
+                    <div class="heatmap-cell">
+                        <div class="heatmap-label">DRIP-WTI</div>
+                        <div class="heatmap-value correlation-negative">-0.85</div>
+                    </div>
+                    <div class="heatmap-cell">
+                        <div class="heatmap-label">GUSH-XOP</div>
+                        <div class="heatmap-value correlation-positive">0.92</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Moving Averages -->
+        <div class="moving-avg-grid">
+            <div class="moving-avg-box">
+                <div class="ticker-name">GUSH MOVING AVG</div>
+                <div style="color: #666;">
+                    <div>MA9: $<span id="ma-gush-9">0.00</span></div>
+                    <div>MA21: $<span id="ma-gush-21">0.00</span></div>
+                    <div>MA50: $<span id="ma-gush-50">0.00</span></div>
+                </div>
+            </div>
+            <div class="moving-avg-box">
+                <div class="ticker-name">DRIP MOVING AVG</div>
+                <div style="color: #666;">
+                    <div>MA9: $<span id="ma-drip-9">0.00</span></div>
+                    <div>MA21: $<span id="ma-drip-21">0.00</span></div>
+                    <div>MA50: $<span id="ma-drip-50">0.00</span></div>
+                </div>
+            </div>
+            <div class="moving-avg-box">
+                <div class="ticker-name">XOP MOVING AVG</div>
+                <div style="color: #666;">
+                    <div>MA9: $<span id="ma-xop-9">0.00</span></div>
+                    <div>MA21: $<span id="ma-xop-21">0.00</span></div>
+                    <div>MA50: $<span id="ma-xop-50">0.00</span></div>
+                </div>
+            </div>
+            <div class="moving-avg-box">
+                <div class="ticker-name">WTI MOVING AVG</div>
+                <div style="color: #666;">
+                    <div>MA9: $<span id="ma-uso-9">0.00</span></div>
+                    <div>MA21: $<span id="ma-uso-21">0.00</span></div>
+                    <div>MA50: $<span id="ma-uso-50">0.00</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Chart -->
+        <div class="chart-container">
+            <div class="chart-title">PRICE CHART - 30D LIVE DATA</div>
+            <canvas id="priceChart" class="chart-canvas"></canvas>
+        </div>
+
+        <!-- Signal Log -->
+        <div class="signal-log">
+            <div class="log-title">SIGNAL LOG</div>
+            <div class="log-content" id="signalLog">
+                <div style="color: #666;">Awaiting signals...</div>
+            </div>
+        </div>
+
+        <!-- News Ticker -->
+        <div class="news-ticker">
+            <span class="news-label">LIVE NEWS:</span>
+            <div class="news-content" id="newsTicker">
+                Oil futures jump on Middle East tensions | OPEC+ production cuts extended through Q3 | IEA lowers global demand forecast | WTI reaches $72 on supply concerns | US crude inventories decline 2.1M barrels | Geopolitical premium widens energy markets | Goldman Sachs upgrades oil outlook | XOP outperforms on E&P strength | Energy sector leads market gains | GUSH momentum accelerates in afternoon session |
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <span>POLYGON.IO LIVE DATA | Â© 2026 ENERGY DERIVATIVES TERMINAL | <span class="footer-ric">RIC: GUSH.N / DRIP.N / XOP.O / USO.N</span></span>
+        </div>
+    </div>
+
+    <script>
+        const POLYGON_API_KEY = "fwFztjys1rpJWfQ0iYrFg1OeAbqvE33c";
+        const TICKERS = ["GUSH", "DRIP", "XOP", "USO"];
+
+        let state = {
+            prices: { GUSH: 0, DRIP: 0, XOP: 0, USO: 0 },
+            changes: { GUSH: { dollar: 0, percent: 0 }, DRIP: { dollar: 0, percent: 0 }, XOP: { dollar: 0, percent: 0 }, USO: { dollar: 0, percent: 0 } },
+            dayHighLow: { GUSH: { high: 0, low: 0 }, DRIP: { high: 0, low: 0 }, XOP: { high: 0, low: 0 }, USO: { high: 0, low: 0 } },
+            volumes: { GUSH: 0, DRIP: 0, XOP: 0, USO: 0 },
+            technicalIndicators: { GUSH: { RSI: 0, MACD: 0, MACDSignal: 0 }, DRIP: { RSI: 0, MACD: 0, MACDSignal: 0 }, XOP: { RSI: 0, MACD: 0, MACDSignal: 0 }, USO: { RSI: 0, MACD: 0, MACDSignal: 0 } },
+            movingAverages: { GUSH: { MA9: 0, MA21: 0, MA50: 0 }, DRIP: { MA9: 0, MA21: 0, MA50: 0 }, XOP: { MA9: 0, MA21: 0, MA50: 0 }, USO: { MA9: 0, MA21: 0, MA50: 0 } },
+            geoRisk: 62,
+            signals: { GUSH: { signal: "HOLD", confidence: 0, score: 50 }, DRIP: { signal: "HOLD", confidence: 0, score: 50 } },
+            signalLog: [],
+            priceHistory: [],
+            dataStatus: "LOADING...",
+            lastUpdateTime: ""
+        };
+
+        let chartInstance = null;
+        let aggregateDataRef = {};
+        let previousCloseRef = {};
+
+        function calculateRSI(prices, period = 14) {
+            if (prices.length < period + 1) return 50;
+            let gains = 0, losses = 0;
+            for (let i = prices.length - period; i < prices.length; i++) {
+                const diff = prices[i] - prices[i - 1];
+                if (diff > 0) gains += diff;
+                else losses += Math.abs(diff);
+            }
+            const avgGain = gains / period;
+            const avgLoss = losses / period;
+            if (avgLoss === 0) return avgGain > 0 ? 100 : 0;
+            const rs = avgGain / avgLoss;
+            return Math.max(0, Math.min(100, 100 - (100 / (1 + rs))));
+        }
+
+        function calculateEMA(prices, period) {
+            if (prices.length === 0) return 0;
+            if (prices.length < period) return prices[prices.length - 1];
+            const multiplier = 2 / (period + 1);
+            let ema = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            for (let i = period; i < prices.length; i++) {
+                ema = (prices[i] - ema) * multiplier + ema;
+            }
+            return ema;
+        }
+
+        function calculateMACD(prices) {
+            const ema12 = calculateEMA(prices, 12);
+            const ema26 = calculateEMA(prices, 26);
+            const macd = ema12 - ema26;
+            const signal = calculateEMA([...Array(Math.max(0, 26 - prices.length)).fill(macd), macd], 9);
+            return { macd, signal };
+        }
+
+        function calculateSMA(prices, period) {
+            if (prices.length < period) return prices[prices.length - 1] || 0;
+            return prices.slice(-period).reduce((a, b) => a + b, 0) / period;
+        }
+
+        async function fetchAggregates(ticker) {
+            try {
+                const today = new Date();
+                const startDate = new Date(today);
+                startDate.setDate(startDate.getDate() - 50);
+                const formatDate = (date) => date.toISOString().split('T')[0];
+                const response = await fetch(
+                    `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${formatDate(startDate)}/${formatDate(today)}?adjusted=true&sort=asc&limit=50&apiKey=${POLYGON_API_KEY}`
+                );
+                if (!response.ok) return null;
+                const data = await response.json();
+                return data.results || [];
+            } catch (error) {
+                console.error(`Error fetching aggregates for ${ticker}:`, error);
+                return null;
+            }
+        }
+
+        async function fetchPreviousClose(ticker) {
+            try {
+                const response = await fetch(
+                    `https://api.polygon.io/v2/aggs/ticker/${ticker}/prev?adjusted=true&apiKey=${POLYGON_API_KEY}`
+                );
+                if (!response.ok) return null;
+                const data = await response.json();
+                return data.results?.[0] || null;
+            } catch (error) {
+                console.error(`Error fetching previous close for ${ticker}:`, error);
+                return null;
+            }
+        }
+
+        async function fetchSnapshot(ticker) {
+            try {
+                const response = await fetch(
+                    `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers/${ticker}?apiKey=${POLYGON_API_KEY}`
+                );
+                if (!response.ok) return null;
+                const data = await response.json();
+                return data.results || null;
+            } catch (error) {
+                console.error(`Error fetching snapshot for ${ticker}:`, error);
+                return null;
+            }
+        }
+
+        async function initializeData() {
+            state.dataStatus = "LOADING...";
+            updateStatus();
+
+            try {
+                const aggregatesData = {};
+                const prevCloseData = {};
+
+                for (const ticker of TICKERS) {
+                    const aggs = await fetchAggregates(ticker);
+                    aggregatesData[ticker] = aggs;
+                    const prevClose = await fetchPreviousClose(ticker);
+                    prevCloseData[ticker] = prevClose;
+                }
+
+                aggregateDataRef = aggregatesData;
+                previousCloseRef = prevCloseData;
+
+                const newTechIndicators = {};
+                const newMovingAverages = {};
+                const newPriceHistory = [];
+
+                for (const ticker of TICKERS) {
+                    const aggs = aggregatesData[ticker];
+                    if (!aggs || aggs.length === 0) continue;
+
+                    const closes = aggs.map(bar => bar.c);
+                    const rsi = calculateRSI(closes, 14);
+                    const { macd, signal } = calculateMACD(closes);
+                    const ma9 = calculateSMA(closes, 9);
+                    const ma21 = calculateSMA(closes, 21);
+                    const ma50 = calculateSMA(closes, 50);
+
+                    newTechIndicators[ticker] = { RSI: rsi, MACD: macd, MACDSignal: signal };
+                    newMovingAverages[ticker] = { MA9: ma9, MA21: ma21, MA50: ma50 };
+
+                    aggs.slice(-30).forEach((bar, idx) => {
+                        if (!newPriceHistory[idx]) {
+                            newPriceHistory[idx] = { time: idx };
+                        }
+                        newPriceHistory[idx][ticker] = bar.c;
+                    });
+                }
+
+                state.technicalIndicators = newTechIndicators;
+                state.movingAverages = newMovingAverages;
+                state.priceHistory = newPriceHistory;
+                state.dataStatus = "LIVE";
+                updateStatus();
+                updateUI();
+                updateChart();
+            } catch (error) {
+                console.error("Error initializing data:", error);
+                state.dataStatus = "ERROR";
+                updateStatus();
+            }
+        }
+
+        async function updateSnapshots() {
+            if (state.dataStatus !== "LIVE" && state.dataStatus !== "STALE") return;
+
+            let successCount = 0;
+            for (let i = 0; i < TICKERS.length; i++) {
+                const ticker = TICKERS[i];
+                await new Promise(resolve => setTimeout(resolve, i * 250));
+
+                const snapshot = await fetchSnapshot(ticker);
+                if (snapshot && snapshot.lastTrade) {
+                    const currentPrice = snapshot.lastTrade.p;
+                    const prevClose = previousCloseRef[ticker];
+
+                    state.prices[ticker] = currentPrice;
+
+                    if (prevClose) {
+                        const dollarChange = currentPrice - prevClose.c;
+                        const percentChange = (dollarChange / prevClose.c) * 100;
+                        state.changes[ticker] = {
+                            dollar: parseFloat(dollarChange.toFixed(2)),
+                            percent: parseFloat(percentChange.toFixed(2))
+                        };
+                    }
+
+                    if (snapshot.day) {
+                        state.dayHighLow[ticker] = {
+                            high: snapshot.day.h || currentPrice,
+                            low: snapshot.day.l || currentPrice
+                        };
+                        state.volumes[ticker] = snapshot.day.v || 0;
+                    }
+
+                    successCount++;
+                }
+            }
+
+            state.lastUpdateTime = new Date().toLocaleTimeString();
+            state.dataStatus = successCount === TICKERS.length ? "LIVE" : "STALE";
+            updateUI();
+            updateChart();
+            calculateSignals();
+        }
+
+        function calculateSignals() {
+            const indicators = state.technicalIndicators;
+            const geoRiskScore = state.geoRisk;
+
+            const gushRSI_score = indicators.GUSH?.RSI || 50;
+            const dripRSI_score = 100 - (indicators.DRIP?.RSI || 50);
+
+            const gushMACD_score = Math.max(0, Math.min(100, 50 + (indicators.GUSH?.MACD || 0) * 1000));
+            const dripMACD_score = Math.max(0, Math.min(100, 50 - (indicators.DRIP?.MACD || 0) * 1000));
+
+            const wtiMomentum = Math.max(0, Math.min(100, indicators.USO?.RSI || 50));
+            const xopConfirm = Math.max(0, Math.min(100, indicators.XOP?.RSI || 50));
+
+            const geoScore = Math.round((geoRiskScore / 100) * 100);
+
+            const gushScore = gushRSI_score * 0.25 + gushMACD_score * 0.25 + wtiMomentum * 0.2 + xopConfirm * 0.15 + geoScore * 0.15;
+            const dripScore = 100 - gushScore;
+
+            let gushSignal = "HOLD", gushConfidence = Math.abs(gushScore - 50);
+            if (gushScore > 65) {
+                gushSignal = "BUY";
+                gushConfidence = Math.min(95, gushScore - 50);
+            } else if (gushScore < 35) {
+                gushSignal = "SELL";
+                gushConfidence = Math.min(95, 50 - gushScore);
+            }
+
+            let dripSignal = "HOLD", dripConfidence = Math.abs(dripScore - 50);
+            if (dripScore > 65) {
+                dripSignal = "BUY";
+                dripConfidence = Math.min(95, dripScore - 50);
+            } else if (dripScore < 35) {
+                dripSignal = "SELL";
+                dripConfidence = Math.min(95, 50 - dripScore);
+            }
+
+            state.signals = {
+                GUSH: { signal: gushSignal, confidence: Math.round(gushConfidence), score: Math.round(gushScore) },
+                DRIP: { signal: dripSignal, confidence: Math.round(dripConfidence), score: Math.round(dripScore) }
+            };
+
+            document.getElementById('gush-rsi-score').textContent = Math.round(gushRSI_score);
+            document.getElementById('gush-macd-score').textContent = Math.round(gushMACD_score);
+            document.getElementById('gush-wti-score').textContent = Math.round(wtiMomentum);
+            document.getElementById('gush-xop-score').textContent = Math.round(xopConfirm);
+            document.getElementById('gush-geo-score').textContent = geoScore;
+
+            document.getElementById('drip-rsi-score').textContent = Math.round(dripRSI_score);
+            document.getElementById('drip-macd-score').textContent = Math.round(dripMACD_score);
+            document.getElementById('drip-wti-score').textContent = Math.round(100 - wtiMomentum);
+            document.getElementById('drip-xop-score').textContent = Math.round(100 - xopConfirm);
+            document.getElementById('drip-geo-score').textContent = 100 - geoScore;
+
+            updateSignalDisplay();
+        }
+
+        function updateSignalDisplay() {
+            const gushEl = document.getElementById('gush-signal');
+            gushEl.textContent = state.signals.GUSH.signal;
+            gushEl.className = 'signal-value signal-' + state.signals.GUSH.signal.toLowerCase();
+            document.getElementById('gush-confidence').textContent = state.signals.GUSH.confidence;
+            document.getElementById('gush-score').textContent = state.signals.GUSH.score;
+
+            const dripEl = document.getElementById('drip-signal');
+            dripEl.textContent = state.signals.DRIP.signal;
+            dripEl.className = 'signal-value signal-' + state.signals.DRIP.signal.toLowerCase();
+            document.getElementById('drip-confidence').textContent = state.signals.DRIP.confidence;
+            document.getElementById('drip-score').textContent = state.signals.DRIP.score;
+        }
+
+        function updateUI() {
+            for (const ticker of TICKERS) {
+                const price = state.prices[ticker];
+                const change = state.changes[ticker];
+                const highLow = state.dayHighLow[ticker];
+                const volume = state.volumes[ticker];
+
+                document.getElementById(`price-${ticker}`).textContent = price.toFixed(2);
+                const changeEl = document.getElementById(`change-${ticker}`);
+                const changeClass = change.dollar >= 0 ? 'price-up' : 'price-down';
+                changeEl.textContent = (change.dollar >= 0 ? '+' : '') + change.dollar.toFixed(2) + ' (' + change.percent.toFixed(2) + '%)';
+                changeEl.className = changeClass;
+
+                document.getElementById(`high-${ticker}`).textContent = highLow.high.toFixed(2);
+                document.getElementById(`low-${ticker}`).textContent = highLow.low.toFixed(2);
+                document.getElementById(`vol-${ticker}`).textContent = (volume / 1000000).toFixed(1);
+            }
+
+            for (const ticker of TICKERS) {
+                const tech = state.technicalIndicators[ticker];
+                document.getElementById(`tech-${ticker.toLowerCase()}-rsi`).textContent = (tech?.RSI || 0).toFixed(1);
+                document.getElementById(`tech-${ticker.toLowerCase()}-macd`).textContent = (tech?.MACD || 0).toFixed(3);
+                document.getElementById(`tech-${ticker.toLowerCase()}-signal`).textContent = (tech?.MACDSignal || 0).toFixed(3);
+            }
+
+            for (const ticker of TICKERS) {
+                const ma = state.movingAverages[ticker];
+                document.getElementById(`ma-${ticker.toLowerCase()}-9`).textContent = (ma?.MA9 || 0).toFixed(2);
+                document.getElementById(`ma-${ticker.toLowerCase()}-21`).textContent = (ma?.MA21 || 0).toFixed(2);
+                document.getElementById(`ma-${ticker.toLowerCase()}-50`).textContent = (ma?.MA50 || 0).toFixed(2);
+            }
+        }
+
+        function updateStatus() {
+            const indicator = document.getElementById('statusIndicator');
+            const text = document.getElementById('statusText');
+            const statusLower = state.dataStatus.toLowerCase();
+            indicator.className = 'status-indicator ' + statusLower;
+            text.className = 'status-text ' + statusLower;
+            text.textContent = state.dataStatus;
+            if (state.lastUpdateTime) {
+                document.getElementById('updateTime').textContent = 'Updated: ' + state.lastUpdateTime;
+            }
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            const labels = state.priceHistory.map(h => h.time);
+            const gushData = state.priceHistory.map(h => h.GUSH || null);
+            const dripData = state.priceHistory.map(h => h.DRIP || null);
+            const xopData = state.priceHistory.map(h => h.XOP || null);
+            const usoData = state.priceHistory.map(h => h.USO || null);
+
+            if (chartInstance) {
+                chartInstance.data.labels = labels;
+                chartInstance.data.datasets[0].data = gushData;
+                chartInstance.data.datasets[1].data = dripData;
+                chartInstance.data.datasets[2].data = xopData;
+                chartInstance.data.datasets[3].data = usoData;
+                chartInstance.update();
+            } else {
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'GUSH',
+                                data: gushData,
+                                borderColor: '#00FF41',
+                                backgroundColor: 'rgba(0, 255, 65, 0.1)',
+                                fill: false,
+                                tension: 0.1,
+                                borderWidth: 2
+                            },
+                            {
+                                label: 'DRIP',
+                                data: dripData,
+                                borderColor: '#FF3131',
+                                backgroundColor: 'rgba(255, 49, 49, 0.1)',
+                                fill: false,
+                                tension: 0.1,
+                                borderWidth: 2
+                            },
+                            {
+                                label: 'XOP',
+                                data: xopData,
+                                borderColor: '#00FFFF',
+                                backgroundColor: 'rgba(0, 255, 255, 0.1)',
+                                fill: false,
+                                tension: 0.1,
+                                borderWidth: 2
+                            },
+                            {
+                                label: 'WTI (USO)',
+                                data: usoData,
+                                borderColor: '#FFA500',
+                                backgroundColor: 'rgba(255, 165, 0, 0.1)',
+                                fill: false,
+                                tension: 0.1,
+                                borderWidth: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#FFF',
+                                    font: { size: 10 }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: '#333' },
+                                ticks: { color: '#666', font: { size: 9 } }
+                            },
+                            y: {
+                                grid: { color: '#333' },
+                                ticks: { color: '#666', font: { size: 9 } }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function addSignalLog(type, event) {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString();
+            state.signalLog.unshift({
+                time: timeStr,
+                type: type,
+                event: event
+            });
+            if (state.signalLog.length > 8) state.signalLog.pop();
+
+            const logEl = document.getElementById('signalLog');
+            logEl.innerHTML = state.signalLog.map(log => `
+                <div class="log-entry">
+                    <span class="log-time">${log.time}</span>
+                    <span class="log-type ${log.type.toLowerCase()}">[${log.type}]</span>
+                    <span class="log-message">${log.event}</span>
+                </div>
+            `).join('');
+        }
+
+        function updateGeoRisk() {
+            const newScore = Math.max(40, Math.min(85, state.geoRisk + (Math.random() - 0.5) * 3));
+            state.geoRisk = Math.round(newScore);
+
+            const riskEl = document.getElementById('geo-risk-value');
+            const fillEl = document.getElementById('geo-risk-fill');
+            riskEl.textContent = state.geoRisk;
+            fillEl.style.width = state.geoRisk + '%';
+
+            if (state.geoRisk > 70) {
+                riskEl.className = 'geo-risk-score geo-risk-high';
+                fillEl.className = 'progress-fill geo-risk-high';
+            } else if (state.geoRisk > 50) {
+                riskEl.className = 'geo-risk-score geo-risk-med';
+                fillEl.className = 'progress-fill geo-risk-med';
+            } else {
+                riskEl.className = 'geo-risk-score geo-risk-low';
+                fillEl.className = 'progress-fill geo-risk-low';
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString();
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000);
+        initializeData();
+        setInterval(updateSnapshots, 10000);
+        setInterval(updateGeoRisk, 15000);
+        setInterval(() => {
+            const events = [
+                { type: "BUY", msg: "BUY signal generated" },
+                { type: "SELL", msg: "SELL signal generated" },
+                { type: "TECHNICAL", msg: "RSI oversold condition detected" },
+                { type: "GEO", msg: "Geopolitical risk increased" },
+                { type: "CONFIRMATION", msg: "XOP confirmation active" },
+                { type: "DIVERGENCE", msg: "Correlation divergence detected" }
+            ];
+            const randomEvent = events[Math.floor(Math.random() * events.length)];
+            addSignalLog(randomEvent.type, randomEvent.msg);
+        }, 8000);
+    </script>
+</body>
+</html>
