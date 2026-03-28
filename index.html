@@ -1307,6 +1307,21 @@
                 state.technicalIndicators = newTechIndicators;
                 state.movingAverages = newMovingAverages;
                 state.priceHistory = newPriceHistory;
+
+                // Populate prices from previous close (snapshot endpoint requires paid plan)
+                for (const ticker of TICKERS) {
+                    const pc = prevCloseData[ticker];
+                    if (pc) {
+                        state.prices[ticker] = pc.c;
+                        state.dayHighLow[ticker] = { high: pc.h, low: pc.l };
+                        state.volumes[ticker] = pc.v;
+                        const chg = pc.c - pc.o;
+                        state.changes[ticker] = {
+                            dollar: parseFloat(chg.toFixed(2)),
+                            percent: parseFloat(pc.o ? ((chg / pc.o) * 100).toFixed(2) : 0)
+                        };
+                    }
+                }
                 state.dataStatus = "LIVE";
                 updateStatus();
                 updateUI();
