@@ -484,9 +484,145 @@
         .correlation-negative {
             color: #FF3131;
         }
+
+        /* ââ RECOMMENDATION ENGINE ââ */
+        .rec-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .rec-box {
+            background-color: #05050f;
+            border: 1px solid #FF9900;
+            padding: 12px;
+        }
+        .rec-header {
+            color: #FF9900;
+            font-weight: bold;
+            font-size: 10px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #2a2a2a;
+            padding-bottom: 4px;
+            letter-spacing: 1px;
+        }
+        .rec-action {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            letter-spacing: 2px;
+        }
+        .rec-action.signal-add { color: #00FFFF; }
+        .rec-action.signal-trail { color: #FFA500; }
+        .rec-reasoning {
+            font-size: 9px;
+            color: #AAAAAA;
+            margin-bottom: 6px;
+            line-height: 1.5;
+        }
+        .rec-threshold {
+            font-size: 9px;
+            color: #666;
+            border-top: 1px solid #1a1a1a;
+            padding-top: 6px;
+        }
+
+        /* ââ PORTFOLIO TRACKER ââ */
+        .portfolio-section {
+            background-color: #020212;
+            border: 1px solid #00FFFF;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+        .portfolio-title {
+            color: #00FFFF;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+        .portfolio-form {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        .port-field { display: flex; flex-direction: column; gap: 2px; }
+        .port-label { color: #666; font-size: 8px; }
+        .portfolio-input {
+            background: #0a0a0a;
+            border: 1px solid #444;
+            color: #FFF;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+            width: 90px;
+        }
+        .portfolio-select {
+            background: #0a0a0a;
+            border: 1px solid #444;
+            color: #FFF;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+        }
+        .portfolio-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+        .portfolio-table th {
+            color: #FF9900;
+            text-align: left;
+            padding: 4px 8px;
+            border-bottom: 1px solid #333;
+            font-size: 9px;
+        }
+        .portfolio-table td { padding: 5px 8px; border-bottom: 1px solid #111; }
+        .portfolio-action-buy { color: #00FF41; font-weight: bold; }
+        .portfolio-action-sell { color: #FF3131; font-weight: bold; }
+        .portfolio-action-hold { color: #FFFF00; font-weight: bold; }
+        .portfolio-action-add { color: #00FFFF; font-weight: bold; }
+        .portfolio-totals {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #222;
+            font-size: 10px;
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        /* ââ ALERT BANNER ââ */
+        .alert-banner {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 9999;
+            color: #000;
+            padding: 9px 16px;
+            font-weight: bold;
+            font-size: 12px;
+            text-align: center;
+            display: none;
+            font-family: 'Courier New', monospace;
+        }
+        .notif-btn {
+            padding: 3px 8px;
+            background: transparent;
+            border: 1px solid #555;
+            color: #777;
+            cursor: pointer;
+            font-size: 9px;
+            font-family: 'Courier New', monospace;
+        }
+        .notif-btn.active { border-color: #00FF41; color: #00FF41; }
     </style>
 </head>
 <body>
+    <!-- Alert Banner -->
+    <div class="alert-banner" id="alertBanner"></div>
+
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -502,6 +638,7 @@
                     <span class="status-text live" id="statusText">LIVE</span>
                 </div>
                 <span class="update-time" id="updateTime"></span>
+                <button class="notif-btn" id="notifBtn" onclick="enableNotifications()">ð ALERTS</button>
                 <button class="button" id="historyBtn">HISTORY</button>
             </div>
         </div>
@@ -600,6 +737,79 @@
                     <div class="breakdown-item" id="geo-factor-3">Russia/Ukraine: MED</div>
                 </div>
             </div>
+        </div>
+
+        <!-- What To Do Now -->
+        <div class="rec-panel">
+            <div class="rec-box">
+                <div class="rec-header">â¶ GUSH â WHAT TO DO NOW</div>
+                <div class="rec-action signal-hold" id="rec-gush-action">HOLD</div>
+                <div class="rec-reasoning" id="rec-gush-reason">Awaiting data...</div>
+                <div class="rec-threshold" id="rec-gush-levels">Entry: -- | Target: -- | Stop: --</div>
+            </div>
+            <div class="rec-box">
+                <div class="rec-header">â¶ DRIP â WHAT TO DO NOW</div>
+                <div class="rec-action signal-hold" id="rec-drip-action">HOLD</div>
+                <div class="rec-reasoning" id="rec-drip-reason">Awaiting data...</div>
+                <div class="rec-threshold" id="rec-drip-levels">Entry: -- | Target: -- | Stop: --</div>
+            </div>
+            <div class="rec-box">
+                <div class="rec-header">â¶ MARKET OUTLOOK</div>
+                <div style="font-size: 14px; font-weight: bold; color: #FFFF00; margin-bottom: 6px; letter-spacing: 1px;" id="rec-outlook">LOADING...</div>
+                <div style="font-size: 9px; color: #888; line-height: 1.5;" id="rec-outlook-detail">Fetching data...</div>
+            </div>
+        </div>
+
+        <!-- My Portfolio -->
+        <div class="portfolio-section">
+            <div class="portfolio-title">MY PORTFOLIO â TRACK YOUR POSITIONS</div>
+            <div class="portfolio-form">
+                <div class="port-field">
+                    <span class="port-label">TICKER</span>
+                    <select class="portfolio-select" id="port-ticker">
+                        <option value="GUSH">GUSH</option>
+                        <option value="DRIP">DRIP</option>
+                        <option value="XOP">XOP</option>
+                        <option value="USO">USO</option>
+                    </select>
+                </div>
+                <div class="port-field">
+                    <span class="port-label">SHARES</span>
+                    <input class="portfolio-input" id="port-shares" type="number" placeholder="100" min="0" step="1" />
+                </div>
+                <div class="port-field">
+                    <span class="port-label">AVG COST ($)</span>
+                    <input class="portfolio-input" id="port-cost" type="number" placeholder="10.00" step="0.01" min="0" />
+                </div>
+                <div class="port-field">
+                    <span class="port-label">&nbsp;</span>
+                    <button class="button" onclick="addPosition()">ADD / UPDATE</button>
+                </div>
+                <div class="port-field">
+                    <span class="port-label">&nbsp;</span>
+                    <button class="button" onclick="clearPortfolio()" style="background:#1a1a1a;border-color:#555;color:#AAA;">CLEAR ALL</button>
+                </div>
+            </div>
+            <table class="portfolio-table">
+                <thead>
+                    <tr>
+                        <th>TICKER</th>
+                        <th>SHARES</th>
+                        <th>AVG COST</th>
+                        <th>CURRENT</th>
+                        <th>VALUE</th>
+                        <th>P&amp;L $</th>
+                        <th>P&amp;L %</th>
+                        <th>ACTION</th>
+                        <th>REASON</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="portfolio-body">
+                    <tr><td colspan="10" style="color:#555;text-align:center;padding:14px;">No positions yet. Enter your shares and avg cost above.</td></tr>
+                </tbody>
+            </table>
+            <div class="portfolio-totals" id="portfolio-totals"></div>
         </div>
 
         <!-- Technical Indicators -->
@@ -738,6 +948,224 @@
         let chartInstance = null;
         let aggregateDataRef = {};
         let previousCloseRef = {};
+
+        // âââ PORTFOLIO âââââââââââââââââââââââââââââââââââââââââââââââ
+        let portfolio = {};
+        try { portfolio = JSON.parse(localStorage.getItem('energyPortfolio') || '{}'); } catch(e) {}
+        let prevSignals = { GUSH: null, DRIP: null };
+        let notificationsEnabled = false;
+
+        function savePortfolio() {
+            try { localStorage.setItem('energyPortfolio', JSON.stringify(portfolio)); } catch(e) {}
+        }
+
+        function addPosition() {
+            const ticker = document.getElementById('port-ticker').value;
+            const shares = parseFloat(document.getElementById('port-shares').value);
+            const cost   = parseFloat(document.getElementById('port-cost').value);
+            if (!ticker || isNaN(shares) || isNaN(cost) || shares <= 0 || cost <= 0) {
+                showAlert('Enter valid Shares and Avg Cost values.', 'info'); return;
+            }
+            portfolio[ticker] = { shares, avgCost: cost };
+            savePortfolio();
+            updatePortfolioDisplay();
+            document.getElementById('port-shares').value = '';
+            document.getElementById('port-cost').value = '';
+        }
+
+        function removePosition(ticker) {
+            delete portfolio[ticker];
+            savePortfolio();
+            updatePortfolioDisplay();
+        }
+
+        function clearPortfolio() {
+            portfolio = {};
+            savePortfolio();
+            updatePortfolioDisplay();
+        }
+
+        function getPortfolioAction(ticker, currentPrice, avgCost, signal, confidence) {
+            const pnlPct = ((currentPrice - avgCost) / avgCost) * 100;
+            if (pnlPct <= -15)
+                return { action: 'SELL', cls: 'sell', reason: `Stop-loss triggered: down ${pnlPct.toFixed(1)}%` };
+            if (signal === 'SELL')
+                return { action: 'SELL', cls: 'sell', reason: `SELL signal Â· ${confidence}% conf Â· consider exiting` };
+            if (signal === 'BUY' && confidence > 50) {
+                if (pnlPct >= 30) return { action: 'TRAIL STOP', cls: 'hold', reason: `Up ${pnlPct.toFixed(1)}% â lock in gains` };
+                return { action: 'ADD MORE', cls: 'add', reason: `Strong BUY signal Â· ${confidence}% conf` };
+            }
+            if (pnlPct >= 30 && signal !== 'BUY')
+                return { action: 'TAKE PROFITS', cls: 'sell', reason: `Up ${pnlPct.toFixed(1)}% â trim position` };
+            return { action: 'HOLD', cls: 'hold', reason: `Signal: HOLD Â· ${confidence}% conf` };
+        }
+
+        function updatePortfolioDisplay() {
+            const tbody = document.getElementById('portfolio-body');
+            const keys  = Object.keys(portfolio);
+            if (keys.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="color:#555;text-align:center;padding:14px;">No positions yet. Enter your shares and avg cost above.</td></tr>';
+                document.getElementById('portfolio-totals').innerHTML = '';
+                return;
+            }
+            let totalValue = 0, totalCost = 0, rows = '';
+            for (const ticker of keys) {
+                const pos          = portfolio[ticker];
+                const currentPrice = state.prices[ticker] || 0;
+                const posValue     = currentPrice * pos.shares;
+                const posCost      = pos.avgCost   * pos.shares;
+                const pnlDollar    = posValue - posCost;
+                const pnlPct       = posCost > 0 ? (pnlDollar / posCost) * 100 : 0;
+                const sig          = state.signals[ticker] || state.signals['GUSH'] || { signal: 'HOLD', confidence: 0 };
+                const pa           = currentPrice > 0
+                    ? getPortfolioAction(ticker, currentPrice, pos.avgCost, sig.signal, sig.confidence)
+                    : { action: '...', cls: 'hold', reason: 'Awaiting price' };
+                const pnlClass     = pnlDollar >= 0 ? 'price-up' : 'price-down';
+                totalValue += posValue;
+                totalCost  += posCost;
+                rows += `<tr>
+                    <td style="color:#FF9900;font-weight:bold;">${ticker}</td>
+                    <td>${pos.shares.toLocaleString()}</td>
+                    <td>$${pos.avgCost.toFixed(2)}</td>
+                    <td>$${currentPrice > 0 ? currentPrice.toFixed(2) : '--'}</td>
+                    <td>$${posValue > 0 ? posValue.toFixed(2) : '--'}</td>
+                    <td class="${pnlClass}">${pnlDollar >= 0 ? '+' : ''}$${pnlDollar.toFixed(2)}</td>
+                    <td class="${pnlClass}">${pnlDollar >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%</td>
+                    <td class="portfolio-action-${pa.cls}">${pa.action}</td>
+                    <td style="color:#888;font-size:9px;">${pa.reason}</td>
+                    <td><span style="cursor:pointer;color:#555;font-size:11px;" onclick="removePosition('${ticker}')">â</span></td>
+                </tr>`;
+            }
+            tbody.innerHTML = rows;
+            const totalPnl    = totalValue - totalCost;
+            const totalPnlPct = totalCost > 0 ? (totalPnl / totalCost) * 100 : 0;
+            const tc = totalPnl >= 0 ? 'price-up' : 'price-down';
+            document.getElementById('portfolio-totals').innerHTML = `
+                <span style="color:#666;">TOTAL VALUE: <span style="color:#FFF;">$${totalValue.toFixed(2)}</span></span>
+                <span style="color:#666;">TOTAL COST: <span style="color:#FFF;">$${totalCost.toFixed(2)}</span></span>
+                <span style="color:#666;">TOTAL P&L: <span class="${tc}">${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)} (${totalPnlPct.toFixed(1)}%)</span></span>
+            `;
+        }
+
+        // âââ ALERTS ââââââââââââââââââââââââââââââââââââââââââââââââââ
+        function showAlert(msg, type) {
+            const banner = document.getElementById('alertBanner');
+            banner.textContent = 'â   ' + msg;
+            banner.style.display = 'block';
+            const colors = { sell: '#CC0000', buy: '#006622', info: '#003A7A' };
+            banner.style.background = colors[type] || colors.sell;
+            clearTimeout(banner._timer);
+            banner._timer = setTimeout(() => { banner.style.display = 'none'; }, 7000);
+            if (notificationsEnabled && Notification.permission === 'granted') {
+                new Notification('Energy Terminal', { body: msg });
+            }
+        }
+
+        function enableNotifications() {
+            if (!('Notification' in window)) { showAlert('Notifications not supported in this browser.', 'info'); return; }
+            Notification.requestPermission().then(perm => {
+                notificationsEnabled = perm === 'granted';
+                const btn = document.getElementById('notifBtn');
+                btn.textContent  = notificationsEnabled ? 'ð ALERTS ON' : 'ð ALERTS OFF';
+                btn.className    = 'notif-btn' + (notificationsEnabled ? ' active' : '');
+                if (notificationsEnabled) showAlert('Alerts enabled â you will be notified on signal changes.', 'info');
+            });
+        }
+
+        function checkAlerts() {
+            const gs = state.signals.GUSH;
+            const ds = state.signals.DRIP;
+            if (prevSignals.GUSH !== null && prevSignals.GUSH !== gs.signal) {
+                if (gs.signal === 'BUY')  showAlert(`GUSH â BUY SIGNAL  (${gs.confidence}% confidence)`, 'buy');
+                if (gs.signal === 'SELL') showAlert(`GUSH â SELL SIGNAL  (${gs.confidence}% confidence)`, 'sell');
+                addSignalLog(gs.signal, `GUSH signal changed: ${prevSignals.GUSH} â ${gs.signal}`);
+            }
+            if (prevSignals.DRIP !== null && prevSignals.DRIP !== ds.signal) {
+                if (ds.signal === 'BUY')  showAlert(`DRIP â BUY SIGNAL  (${ds.confidence}% confidence)`, 'buy');
+                if (ds.signal === 'SELL') showAlert(`DRIP â SELL SIGNAL  (${ds.confidence}% confidence)`, 'sell');
+                addSignalLog(ds.signal, `DRIP signal changed: ${prevSignals.DRIP} â ${ds.signal}`);
+            }
+            for (const ticker of ['GUSH', 'DRIP', 'XOP', 'USO']) {
+                const pos = portfolio[ticker];
+                if (!pos || !state.prices[ticker]) continue;
+                const pnlPct = ((state.prices[ticker] - pos.avgCost) / pos.avgCost) * 100;
+                if (pnlPct <= -15) showAlert(`STOP-LOSS: ${ticker} down ${pnlPct.toFixed(1)}% from your entry!`, 'sell');
+                else if (pnlPct >= 30) showAlert(`TAKE PROFITS: ${ticker} up ${pnlPct.toFixed(1)}% from your entry`, 'buy');
+            }
+            prevSignals.GUSH = gs.signal;
+            prevSignals.DRIP = ds.signal;
+        }
+
+        // âââ RECOMMENDATIONS âââââââââââââââââââââââââââââââââââââââââ
+        function updateRecommendations() {
+            const gs   = state.signals.GUSH || { signal: 'HOLD', confidence: 0, score: 50 };
+            const ds   = state.signals.DRIP || { signal: 'HOLD', confidence: 0, score: 50 };
+            const rsi  = state.technicalIndicators;
+            const geo  = state.geoRisk;
+            const gP   = state.prices.GUSH || 0;
+            const dP   = state.prices.DRIP || 0;
+
+            // GUSH panel
+            const gushPos  = portfolio['GUSH'];
+            let gText, gClass, gReason, gLevels;
+            if (gushPos && gP > 0) {
+                const pnl = ((gP - gushPos.avgCost) / gushPos.avgCost) * 100;
+                const pa  = getPortfolioAction('GUSH', gP, gushPos.avgCost, gs.signal, gs.confidence);
+                gText    = pa.action;
+                gClass   = pa.cls;
+                gReason  = `You own ${gushPos.shares} shares @ $${gushPos.avgCost.toFixed(2)} Â· P&L: ${pnl >= 0 ? '+' : ''}${pnl.toFixed(1)}%`;
+                gLevels  = `Target: $${(gP * 1.20).toFixed(2)} (+20%) | Stop-loss: $${(gushPos.avgCost * 0.85).toFixed(2)} (-15%)`;
+            } else {
+                gText   = gs.signal;
+                gClass  = gs.signal.toLowerCase();
+                gReason = `Score ${gs.score}/100 Â· RSI ${(rsi.GUSH?.RSI||0).toFixed(0)} Â· Geo ${geo} Â· ${gs.confidence}% conf`;
+                gLevels = gP > 0 ? `Entry: $${gP.toFixed(2)} Â· Target: $${(gP*1.20).toFixed(2)} Â· Stop: $${(gP*0.85).toFixed(2)}` : 'Awaiting price...';
+            }
+            const gEl = document.getElementById('rec-gush-action');
+            gEl.textContent = gText; gEl.className = 'rec-action signal-' + gClass;
+            document.getElementById('rec-gush-reason').textContent  = gReason;
+            document.getElementById('rec-gush-levels').textContent  = gLevels;
+
+            // DRIP panel
+            const dripPos  = portfolio['DRIP'];
+            let dText, dClass, dReason, dLevels;
+            if (dripPos && dP > 0) {
+                const pnl = ((dP - dripPos.avgCost) / dripPos.avgCost) * 100;
+                const pa  = getPortfolioAction('DRIP', dP, dripPos.avgCost, ds.signal, ds.confidence);
+                dText    = pa.action;
+                dClass   = pa.cls;
+                dReason  = `You own ${dripPos.shares} shares @ $${dripPos.avgCost.toFixed(2)} Â· P&L: ${pnl >= 0 ? '+' : ''}${pnl.toFixed(1)}%`;
+                dLevels  = `Target: $${(dP * 1.20).toFixed(2)} (+20%) | Stop-loss: $${(dripPos.avgCost * 0.85).toFixed(2)} (-15%)`;
+            } else {
+                dText   = ds.signal;
+                dClass  = ds.signal.toLowerCase();
+                dReason = `Score ${ds.score}/100 Â· RSI ${(rsi.DRIP?.RSI||0).toFixed(0)} Â· Geo ${geo} Â· ${ds.confidence}% conf`;
+                dLevels = dP > 0 ? `Entry: $${dP.toFixed(2)} Â· Target: $${(dP*1.20).toFixed(2)} Â· Stop: $${(dP*0.85).toFixed(2)}` : 'Awaiting price...';
+            }
+            const dEl = document.getElementById('rec-drip-action');
+            dEl.textContent = dText; dEl.className = 'rec-action signal-' + dClass;
+            document.getElementById('rec-drip-reason').textContent  = dReason;
+            document.getElementById('rec-drip-levels').textContent  = dLevels;
+
+            // Market outlook
+            const wtiRSI = rsi.USO?.RSI || 50;
+            const xopRSI = rsi.XOP?.RSI || 50;
+            const outEl  = document.getElementById('rec-outlook');
+            const detEl  = document.getElementById('rec-outlook-detail');
+            if (gs.signal === 'BUY' && wtiRSI > 55) {
+                outEl.textContent = 'ð  BULLISH ON OIL';
+                outEl.style.color = '#00FF41';
+                detEl.textContent = `WTI momentum strong (RSI ${wtiRSI.toFixed(0)}), XOP confirming (RSI ${xopRSI.toFixed(0)}). Geo risk ${geo}/100. Favor GUSH over DRIP. Consider adding to winners.`;
+            } else if (ds.signal === 'BUY' || wtiRSI < 45) {
+                outEl.textContent = 'ð  BEARISH ON OIL';
+                outEl.style.color = '#FF3131';
+                detEl.textContent = `WTI weakening (RSI ${wtiRSI.toFixed(0)}), downside pressure building. Geo risk ${geo}/100. DRIP may outperform. Consider trimming GUSH positions.`;
+            } else {
+                outEl.textContent = 'â¡  NEUTRAL / WATCH';
+                outEl.style.color = '#FFFF00';
+                detEl.textContent = `Mixed signals â WTI RSI ${wtiRSI.toFixed(0)}, XOP RSI ${xopRSI.toFixed(0)}, Geo ${geo}/100. Wait for confirmation before entering new positions.`;
+            }
+        }
 
         function calculateRSI(prices, period = 14) {
             if (prices.length < period + 1) return 50;
@@ -979,6 +1407,9 @@
             document.getElementById('drip-geo-score').textContent = 100 - geoScore;
 
             updateSignalDisplay();
+            updateRecommendations();
+            checkAlerts();
+            updatePortfolioDisplay();
         }
 
         function updateSignalDisplay() {
@@ -1173,6 +1604,7 @@
 
         updateClock();
         setInterval(updateClock, 1000);
+        updatePortfolioDisplay();
         initializeData();
         setInterval(updateSnapshots, 10000);
         setInterval(updateGeoRisk, 15000);
