@@ -1216,14 +1216,10 @@
 
         async function fetchAggregates(ticker) {
             try {
-                const endDate = new Date().toISOString().split('T')[0];
-                const startDate = new Date();
-                startDate.setDate(startDate.getDate() - 50);
-                const fromDate = startDate.toISOString().split('T')[0];
                 const response = await fetch(
                     `https://corsproxy.io/?https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=3mo`
                 );
-                if (!response.ok) return null;
+                if (!response.ok) return [];
                 const data = await response.json();
                 const result = data?.chart?.result?.[0];
                 if (!result) return [];
@@ -1231,16 +1227,16 @@
                 const quotes = result.indicators?.quote?.[0] || {};
                 return timestamps.map((t, i) => ({
                     t: t * 1000,
-                    o: quotes.open?.[i],
-                    h: quotes.high?.[i],
-                    l: quotes.low?.[i],
-                    c: quotes.close?.[i],
-                    v: quotes.volume?.[i],
-                    vw: quotes.close?.[i]
-                })).filter(bar => bar.c != null);
+                    o: quotes.open?.[i] || 0,
+                    h: quotes.high?.[i] || 0,
+                    l: quotes.low?.[i] || 0,
+                    c: quotes.close?.[i] || 0,
+                    v: quotes.volume?.[i] || 0,
+                    vw: quotes.close?.[i] || 0
+                })).filter(bar => bar.c !== 0);
             } catch (error) {
                 console.error(`Error fetching aggregates for ${ticker}:`, error);
-                return null;
+                return [];
             }
         }
 
@@ -1252,7 +1248,9 @@
                 if (!response.ok) return null;
                 const data = await response.json();
                 const meta = data?.chart?.result?.[0]?.meta;
-                return meta ? { c: meta.chartPreviousClose || meta.previousClose } : null;
+                if (!meta) return null;
+                const prev = meta.chartPreviousClose || meta.previousClose || meta.regularMarketPrice || 0;
+                return { c: prev, o: prev, h: prev, l: prev, v: 0, vw: prev };
             } catch (error) {
                 console.error(`Error fetching previous close for ${ticker}:`, error);
                 return null;
@@ -1268,19 +1266,21 @@
                 const data = await response.json();
                 const meta = data?.chart?.result?.[0]?.meta;
                 if (!meta) return null;
+                const price = meta.regularMarketPrice || meta.chartPreviousClose || 0;
+                const prevClose = meta.chartPreviousClose || meta.previousClose || price;
                 return {
-                    c: meta.regularMarketPrice,
-                    o: meta.chartPreviousClose,
-                    h: meta.regularMarketDayHigh,
-                    l: meta.regularMarketDayLow,
-                    v: meta.regularMarketVolume
+                    c: price,
+                    o: prevClose,
+                    h: meta.regularMarketDayHigh || price,
+                    l: meta.regularMarketDayLow || price,
+                    v: meta.regularMarketVolume || 0,
+                    vw: price
                 };
             } catch (error) {
                 console.error(`Error fetching snapshot for ${ticker}:`, error);
                 return null;
             }
-        }
-        async function initializeData() {
+        }        async function initializeData() {
             state.dataStatus = "LOADING...";
             updateStatus();
 
