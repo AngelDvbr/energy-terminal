@@ -617,6 +617,90 @@
             font-family: 'Courier New', monospace;
         }
         .notif-btn.active { border-color: #00FF41; color: #00FF41; }
+
+        .energy-ai-panel {
+          margin-top: 24px;
+        }
+
+        .energy-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+
+        .second-row,
+        .third-row {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .panel-card {
+          background: #111827;
+          border: 1px solid rgba(148,163,184,0.15);
+          border-radius: 14px;
+          padding: 16px;
+        }
+
+        .panel-label {
+          font-size: 12px;
+          text-transform: uppercase;
+          opacity: 0.6;
+          margin-bottom: 10px;
+        }
+
+        .panel-subtext {
+          font-size: 14px;
+          opacity: 0.85;
+        }
+
+        .panel-maintext {
+          font-size: 15px;
+        }
+
+        .signal-row {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 8px;
+        }
+
+        .signal-badge {
+          padding: 6px 12px;
+          border-radius: 999px;
+          font-size: 12px;
+          font-weight: bold;
+        }
+
+        .signal-ticker {
+          font-size: 20px;
+          font-weight: bold;
+        }
+
+        .metric-big {
+          font-size: 26px;
+          font-weight: bold;
+        }
+
+        .trade-plan-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+        }
+
+        .plan-box {
+          background: rgba(255,255,255,0.03);
+          padding: 10px;
+          border-radius: 10px;
+        }
+
+        .badge-buy { background:#14532d; color:#86efac; }
+        .badge-hold { background:#1e3a8a; color:#93c5fd; }
+        .badge-watch { background:#854d0e; color:#fde68a; }
+        .badge-profit { background:#065f46; color:#6ee7b7; }
+        .badge-loss { background:#7f1d1d; color:#fca5a5; }
+        .badge-neutral { background:#334155; color:#cbd5e1; }
+        .badge-bullish { background:#14532d; color:#86efac; }
+        .badge-bearish { background:#7f1d1d; color:#fca5a5; }
+        .badge-chop { background:#78350f; color:#fcd34d; }
     </style>
 </head>
 <body>
@@ -1476,14 +1560,14 @@
                 const highLow = state.dayHighLow[ticker];
                 const volume = state.volumes[ticker];
 
-                document.getElementById(`price-${ticker}`).textContent = price.toFixed(2);
+                document.getElementById(`price-${ticker}`).textContent = (price || 0).toFixed(2);
                 const changeEl = document.getElementById(`change-${ticker}`);
-                const changeClass = change.dollar >= 0 ? 'price-up' : 'price-down';
-                changeEl.textContent = (change.dollar >= 0 ? '+' : '') + change.dollar.toFixed(2) + ' (' + change.percent.toFixed(2) + '%)';
+                const changeClass = (change?.dollar || 0) >= 0 ? 'price-up' : 'price-down';
+                changeEl.textContent = (change.dollar >= 0 ? '+' : '') + (change?.dollar || 0).toFixed(2) + ' (' + (change?.percent || 0).toFixed(2) + '%)';
                 changeEl.className = changeClass;
 
-                document.getElementById(`high-${ticker}`).textContent = highLow.high.toFixed(2);
-                document.getElementById(`low-${ticker}`).textContent = highLow.low.toFixed(2);
+                document.getElementById(`high-${ticker}`).textContent = (highLow?.high || 0).toFixed(2);
+                document.getElementById(`low-${ticker}`).textContent = (highLow?.low || 0).toFixed(2);
                 document.getElementById(`vol-${ticker}`).textContent = (volume / 1000000).toFixed(1);
             }
 
