@@ -618,89 +618,48 @@
         }
         .notif-btn.active { border-color: #00FF41; color: #00FF41; }
 
-        .energy-ai-panel {
-          margin-top: 24px;
+        /* ── AI Signal Panel ── */
+        .ai-signal-section { margin-top: 20px; }
+        .ai-panel-header { display:flex; align-items:center; gap:12px; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid rgba(0,255,65,0.15); }
+        .ai-panel-title { font-size:10px; font-weight:bold; letter-spacing:2px; color:#00FF41; text-transform:uppercase; }
+        .ai-panel-ts { font-size:9px; color:#444; letter-spacing:1px; }
+        .sig-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:10px; }
+        .sig-card { background:#0d1117; border:1px solid #1e293b; border-radius:10px; padding:14px 16px; position:relative; overflow:hidden; }
+        .sig-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:transparent; transition:background .3s; }
+        .sig-card.ac-green::before { background:#22c55e; }
+        .sig-card.ac-red::before { background:#ef4444; }
+        .sig-card.ac-amber::before { background:#f59e0b; }
+        .sig-card.ac-blue::before { background:#3b82f6; }
+        .sc-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:#475569; margin-bottom:8px; }
+        .sc-big { font-size:26px; font-weight:bold; color:#e2e8f0; line-height:1; margin-bottom:4px; }
+        .sc-sub { font-size:11px; color:#64748b; line-height:1.4; }
+        .rg-badge { display:inline-block; padding:4px 10px; border-radius:6px; font-size:10px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
+        .rg-bull { background:#14532d; color:#4ade80; }
+        .rg-bear { background:#7f1d1d; color:#f87171; }
+        .rg-chop { background:#78350f; color:#fcd34d; }
+        .rg-mixed { background:#1e3a8a; color:#93c5fd; }
+        .ss-badge { display:inline-flex; align-items:center; padding:5px 12px; border-radius:7px; font-size:12px; font-weight:bold; letter-spacing:1px; margin-bottom:6px; }
+        .ss-buy    { background:#14532d; color:#4ade80; border:1px solid #166534; }
+        .ss-hold   { background:#1e3a8a; color:#93c5fd; border:1px solid #1d4ed8; }
+        .ss-watch  { background:#78350f; color:#fcd34d; border:1px solid #92400e; }
+        .ss-none   { background:#1e293b; color:#64748b; border:1px solid #334155; }
+        .ss-profit { background:#065f46; color:#34d399; border:1px solid #047857; }
+        .ss-cut    { background:#7f1d1d; color:#f87171; border:1px solid #991b1b; }
+        @keyframes pulse-buy { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.35)} 50%{box-shadow:0 0 0 7px rgba(74,222,128,0)} }
+        .ss-buy.pulsing { animation:pulse-buy 2s infinite; }
+        .conf-bar-wrap { height:4px; background:#1e293b; border-radius:2px; margin-top:8px; }
+        .conf-bar-fill { height:100%; width:0%; border-radius:2px; transition:width .6s,background .4s; }
+        .analysis-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+        .tp-card { background:#0d1117; border:1px solid #1e293b; border-radius:10px; padding:14px 16px; }
+        .tp-grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:10px; }
+        .tp-box { background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:10px 12px; }
+        .tp-lbl { font-size:9px; text-transform:uppercase; letter-spacing:1px; color:#475569; margin-bottom:4px; }
+        .tp-val { font-size:14px; font-weight:bold; color:#e2e8f0; }
+        @media(max-width:768px){
+          .sig-grid { grid-template-columns:repeat(2,1fr); }
+          .analysis-grid { grid-template-columns:1fr; }
+          .tp-grid4 { grid-template-columns:repeat(2,1fr); }
         }
-
-        .energy-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 16px;
-          margin-bottom: 16px;
-        }
-
-        .second-row,
-        .third-row {
-          grid-template-columns: repeat(2, 1fr);
-        }
-
-        .panel-card {
-          background: #111827;
-          border: 1px solid rgba(148,163,184,0.15);
-          border-radius: 14px;
-          padding: 16px;
-        }
-
-        .panel-label {
-          font-size: 12px;
-          text-transform: uppercase;
-          opacity: 0.6;
-          margin-bottom: 10px;
-        }
-
-        .panel-subtext {
-          font-size: 14px;
-          opacity: 0.85;
-        }
-
-        .panel-maintext {
-          font-size: 15px;
-        }
-
-        .signal-row {
-          display: flex;
-          gap: 10px;
-          margin-bottom: 8px;
-        }
-
-        .signal-badge {
-          padding: 6px 12px;
-          border-radius: 999px;
-          font-size: 12px;
-          font-weight: bold;
-        }
-
-        .signal-ticker {
-          font-size: 20px;
-          font-weight: bold;
-        }
-
-        .metric-big {
-          font-size: 26px;
-          font-weight: bold;
-        }
-
-        .trade-plan-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 10px;
-        }
-
-        .plan-box {
-          background: rgba(255,255,255,0.03);
-          padding: 10px;
-          border-radius: 10px;
-        }
-
-        .badge-buy { background:#14532d; color:#86efac; }
-        .badge-hold { background:#1e3a8a; color:#93c5fd; }
-        .badge-watch { background:#854d0e; color:#fde68a; }
-        .badge-profit { background:#065f46; color:#6ee7b7; }
-        .badge-loss { background:#7f1d1d; color:#fca5a5; }
-        .badge-neutral { background:#334155; color:#cbd5e1; }
-        .badge-bullish { background:#14532d; color:#86efac; }
-        .badge-bearish { background:#7f1d1d; color:#fca5a5; }
-        .badge-chop { background:#78350f; color:#fcd34d; }
     </style>
 </head>
 <body>
@@ -844,58 +803,60 @@
             </div>
         </div>
 
-        <!-- AI Panel -->
-        <section class="energy-ai-panel">
+        <!-- AI Signal Panel -->
+        <section class="ai-signal-section">
 
-          <div class="energy-grid">
-            <div class="panel-card">
-              <div class="panel-label">Market Regime</div>
-              <div id="regimeBadge" class="signal-badge badge-neutral">--</div>
-              <div id="regimeText" class="panel-subtext"></div>
+          <div class="ai-panel-header">
+            <span class="ai-panel-title">⬡ AI Signal Panel</span>
+            <span class="ai-panel-ts" id="aiPanelTS">—</span>
+          </div>
+
+          <div class="sig-grid">
+            <div class="sig-card" id="aiRegimeCard">
+              <div class="sc-label">Market Regime</div>
+              <div id="aiRegimeBadge" class="rg-badge rg-chop">LOADING</div>
+              <div id="aiRegimeText" class="sc-sub"></div>
             </div>
-
-            <div class="panel-card">
-              <div class="panel-label">Signal</div>
-              <div class="signal-row">
-                <span id="signalBadge" class="signal-badge badge-neutral">--</span>
-                <span id="signalTicker" class="signal-ticker">---</span>
+            <div class="sig-card" id="aiSignalCard">
+              <div class="sc-label">Primary Signal</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span id="aiSignalBadge" class="ss-badge ss-none">--</span>
+                <span id="aiSignalTicker" style="font-size:18px;font-weight:bold;color:#94a3b8;">---</span>
               </div>
-              <div id="signalSummary" class="panel-subtext"></div>
+              <div id="aiSignalSummary" class="sc-sub"></div>
             </div>
-
-            <div class="panel-card">
-              <div class="panel-label">Confidence</div>
-              <div id="confidenceValue" class="metric-big">--</div>
-              <div id="scoreText"></div>
+            <div class="sig-card" id="aiConfCard">
+              <div class="sc-label">Confidence</div>
+              <div id="aiConfValue" class="sc-big">--</div>
+              <div id="aiConfSub" class="sc-sub"></div>
+              <div class="conf-bar-wrap"><div id="aiConfBar" class="conf-bar-fill"></div></div>
             </div>
-
-            <div class="panel-card">
-              <div class="panel-label">Position</div>
-              <div id="positionText" class="metric-big">Flat</div>
-              <div id="pnlText"></div>
-            </div>
-          </div>
-
-          <div class="energy-grid second-row">
-            <div class="panel-card">
-              <div class="panel-label">Reason</div>
-              <div id="reasonText"></div>
-            </div>
-
-            <div class="panel-card">
-              <div class="panel-label">Trigger / Invalidation</div>
-              <div id="triggerText"></div>
-              <div id="invalidationText"></div>
+            <div class="sig-card" id="aiPosCard">
+              <div class="sc-label">Position Status</div>
+              <div id="aiPositionText" class="sc-big" style="font-size:20px;">Flat</div>
+              <div id="aiPnlText" class="sc-sub"></div>
             </div>
           </div>
 
-          <div class="panel-card">
-            <div class="panel-label">Trade Plan</div>
-            <div class="trade-plan-grid">
-              <div class="plan-box"><div id="entryText"></div></div>
-              <div class="plan-box"><div id="stopText"></div></div>
-              <div class="plan-box"><div id="target1Text"></div></div>
-              <div class="plan-box"><div id="target2Text"></div></div>
+          <div class="analysis-grid">
+            <div class="sig-card">
+              <div class="sc-label">Analysis</div>
+              <div id="aiReasonText" class="sc-sub" style="line-height:1.7;font-size:12px;"></div>
+            </div>
+            <div class="sig-card">
+              <div class="sc-label">Trigger / Invalidation</div>
+              <div id="aiTriggerText" class="sc-sub" style="margin-bottom:8px;font-size:12px;"></div>
+              <div id="aiInvalidText" class="sc-sub" style="color:#f87171;font-size:12px;"></div>
+            </div>
+          </div>
+
+          <div class="tp-card">
+            <div class="sc-label">Trade Plan</div>
+            <div class="tp-grid4">
+              <div class="tp-box"><div class="tp-lbl">Entry</div><div id="aiEntry" class="tp-val">—</div></div>
+              <div class="tp-box"><div class="tp-lbl">Stop Loss</div><div id="aiStop" class="tp-val" style="color:#f87171;">—</div></div>
+              <div class="tp-box"><div class="tp-lbl">Target 1</div><div id="aiT1" class="tp-val" style="color:#4ade80;">—</div></div>
+              <div class="tp-box"><div class="tp-lbl">Target 2</div><div id="aiT2" class="tp-val" style="color:#34d399;">—</div></div>
             </div>
           </div>
 
@@ -1594,21 +1555,22 @@
             updateRecommendations();
             checkAlerts();
             updatePortfolioDisplay();
-            // Auto-update AI panel
-            if (typeof updateEnergyAISignal === 'function') {
+            // Auto-update AI Signal Panel
+            if (typeof updateAISignalPanel === 'function') {
                 const hist = state.priceHistory || [];
                 const rh = (t) => { const v=hist.slice(-5).map(b=>b&&b[t]).filter(x=>x!=null); return v.length?Math.max(...v):(state.prices[t]||0); };
-                updateEnergyAISignal({
+                updateAISignalPanel({
                     gushPrice: state.prices.GUSH||0,
                     dripPrice: state.prices.DRIP||0,
                     xopPrice:  state.prices.XOP||0,
                     usoPrice:  state.prices.USO||0,
-                    gushMA9:  state.movingAverages.GUSH?.MA9||0,
-                    dripMA9:  state.movingAverages.DRIP?.MA9||0,
-                    xopMA9:   state.movingAverages.XOP?.MA9||0,
-                    usoMA9:   state.movingAverages.USO?.MA9||0,
-                    gushMA21: state.movingAverages.GUSH?.MA21||0,
-                    dripMA21: state.movingAverages.DRIP?.MA21||0,
+                    gushMA9:   state.movingAverages.GUSH?.MA9||0,
+                    dripMA9:   state.movingAverages.DRIP?.MA9||0,
+                    xopMA9:    state.movingAverages.XOP?.MA9||0,
+                    usoMA9:    state.movingAverages.USO?.MA9||0,
+                    gushMA21:  state.movingAverages.GUSH?.MA21||0,
+                    dripMA21:  state.movingAverages.DRIP?.MA21||0,
+                    usoMA21:   state.movingAverages.USO?.MA21||0,
                     gushRecentHigh: rh('GUSH'),
                     dripRecentHigh: rh('DRIP'),
                     currentPosition: null,
@@ -1827,112 +1789,128 @@
         }, 8000);
     </script>
     <script>
-function updateEnergyAISignal(d) {
-  const bullish = d.usoPrice > d.usoMA9 && d.xopPrice > d.xopMA9;
-  const bearish = d.usoPrice < d.usoMA9 && d.xopPrice < d.xopMA9;
+function updateAISignalPanel(d) {
+  const usoAboveMA9  = d.usoPrice > d.usoMA9;
+  const usoAboveMA21 = d.usoPrice > (d.usoMA21 || d.usoMA9 * 0.98);
+  const xopAboveMA9  = d.xopPrice > d.xopMA9;
+  const gushAboveMA9 = d.gushPrice > d.gushMA9;
+  const dripAboveMA9 = d.dripPrice > d.dripMA9;
 
-  let signal = "NO TRADE", ticker = "NONE";
-  let activeTicker = null;
-
-  if (bullish && d.gushPrice > d.gushRecentHigh) {
-    signal = "BUY"; ticker = "GUSH"; activeTicker = "GUSH";
-  } else if (bearish && d.dripPrice > d.dripRecentHigh) {
-    signal = "BUY"; ticker = "DRIP"; activeTicker = "DRIP";
-  } else if (bullish) {
-    signal = "WATCH"; ticker = "GUSH"; activeTicker = "GUSH";
-  } else if (bearish) {
-    signal = "WATCH"; ticker = "DRIP"; activeTicker = "DRIP";
-  }
+  const trendingBullish = usoAboveMA9 && usoAboveMA21 && xopAboveMA9;
+  const trendingBearish = !usoAboveMA9 && !usoAboveMA21 && !xopAboveMA9;
+  const mixed = (usoAboveMA9 && !xopAboveMA9) || (!usoAboveMA9 && xopAboveMA9);
 
   // Market Regime
-  const rb = document.getElementById("regimeBadge");
-  const rt = document.getElementById("regimeText");
-  if (bullish) {
-    rb.textContent = "BULLISH"; rb.className = "signal-badge badge-bullish";
-    rt.textContent = "USO & XOP above MA9 — oil trending up";
-  } else if (bearish) {
-    rb.textContent = "BEARISH"; rb.className = "signal-badge badge-bearish";
-    rt.textContent = "USO & XOP below MA9 — oil trending down";
+  const rb = document.getElementById('aiRegimeBadge');
+  const rt = document.getElementById('aiRegimeText');
+  const rc = document.getElementById('aiRegimeCard');
+  if (trendingBullish) {
+    rb.textContent='TRENDING BULLISH'; rb.className='rg-badge rg-bull';
+    rt.textContent='USO + XOP above MA9 & MA21'; rc.className='sig-card ac-green';
+  } else if (trendingBearish) {
+    rb.textContent='TRENDING BEARISH'; rb.className='rg-badge rg-bear';
+    rt.textContent='USO + XOP below MA9 & MA21'; rc.className='sig-card ac-red';
+  } else if (mixed) {
+    rb.textContent='MIXED'; rb.className='rg-badge rg-mixed';
+    rt.textContent='USO and XOP diverging'; rc.className='sig-card ac-blue';
   } else {
-    rb.textContent = "CHOP"; rb.className = "signal-badge badge-chop";
-    rt.textContent = "Mixed signals — stay flat";
+    rb.textContent='RANGE / CHOP'; rb.className='rg-badge rg-chop';
+    rt.textContent='No directional trend — stay flat'; rc.className='sig-card ac-amber';
   }
 
-  // Signal
-  const sb = document.getElementById("signalBadge");
-  sb.textContent = signal;
-  sb.className = signal === "BUY" ? "signal-badge badge-buy"
-    : signal === "WATCH" ? "signal-badge badge-watch"
-    : "signal-badge badge-neutral";
-  document.getElementById("signalTicker").textContent = ticker;
-  document.getElementById("signalSummary").textContent =
-    bullish ? "USO & XOP aligned bullish"
-    : bearish ? "USO & XOP aligned bearish"
-    : "No directional alignment";
+  // Signal Logic
+  let signal='NO TRADE', sClass='ss-none', activeTicker=null;
+  const sc = document.getElementById('aiSignalCard');
+
+  if (d.currentPosition && d.currentPosition !== 'Flat' && d.entryPrice) {
+    const ap = d.currentPosition==='GUSH' ? d.gushPrice : d.dripPrice;
+    const aMA21 = d.currentPosition==='GUSH' ? (d.gushMA21||d.gushMA9*.97) : (d.dripMA21||d.dripMA9*.97);
+    const pnlPct = (ap - d.entryPrice) / d.entryPrice * 100;
+    activeTicker = d.currentPosition;
+    if (pnlPct >= 8) { signal='TAKE PROFIT'; sClass='ss-profit'; }
+    else if (ap < aMA21) { signal='CUT LOSS'; sClass='ss-cut'; }
+    else if ((d.currentPosition==='GUSH'&&trendingBullish)||(d.currentPosition==='DRIP'&&trendingBearish)) { signal='HOLD'; sClass='ss-hold'; }
+    else { signal='NO TRADE'; activeTicker=null; }
+  }
+
+  if (signal==='NO TRADE') {
+    if (trendingBullish && gushAboveMA9 && d.gushPrice > d.gushRecentHigh) { signal='BUY'; sClass='ss-buy'; activeTicker='GUSH'; }
+    else if (trendingBearish && dripAboveMA9 && d.dripPrice > d.dripRecentHigh) { signal='BUY'; sClass='ss-buy'; activeTicker='DRIP'; }
+    else if (trendingBullish && gushAboveMA9) { signal='WATCHLIST'; sClass='ss-watch'; activeTicker='GUSH'; }
+    else if (trendingBearish && dripAboveMA9) { signal='WATCHLIST'; sClass='ss-watch'; activeTicker='DRIP'; }
+  }
+
+  sc.className = (signal==='BUY'||signal==='HOLD'||signal==='TAKE PROFIT') ? 'sig-card ac-green'
+    : signal==='CUT LOSS' ? 'sig-card ac-red'
+    : signal==='WATCHLIST' ? 'sig-card ac-amber' : 'sig-card';
+
+  const sb = document.getElementById('aiSignalBadge');
+  sb.textContent=signal; sb.className='ss-badge '+sClass;
+  if (signal==='BUY') sb.classList.add('pulsing'); else sb.classList.remove('pulsing');
+  document.getElementById('aiSignalTicker').textContent = activeTicker||'---';
+  document.getElementById('aiSignalSummary').textContent =
+    trendingBullish ? 'Bullish oil + XOP alignment'
+    : trendingBearish ? 'Bearish oil + XOP alignment'
+    : mixed ? 'Conflicting — no directional edge' : 'No trend detected';
 
   // Confidence
-  const confPct = signal === "BUY" ? "85%" : signal === "WATCH" ? "55%" : "20%";
-  document.getElementById("confidenceValue").textContent = confPct;
-  document.getElementById("confidenceValue").style.color =
-    signal === "BUY" ? "#86efac" : signal === "WATCH" ? "#fde68a" : "#94a3b8";
-  document.getElementById("scoreText").textContent =
-    "USO vs MA9: " + (d.usoPrice - d.usoMA9).toFixed(2) +
-    " · XOP vs MA9: " + (d.xopPrice - d.xopMA9).toFixed(2);
+  const confN = signal==='BUY'?85 : signal==='HOLD'?72 : signal==='WATCHLIST'?52 : signal==='TAKE PROFIT'?90 : signal==='CUT LOSS'?95 : 18;
+  const cv = document.getElementById('aiConfValue');
+  cv.textContent = confN+'%';
+  cv.style.color = confN>=80?'#4ade80':confN>=50?'#fcd34d':'#64748b';
+  document.getElementById('aiConfSub').textContent = 'USOΔMA9:'+(d.usoPrice-d.usoMA9).toFixed(2)+' · XOPΔMA9:'+(d.xopPrice-d.xopMA9).toFixed(2);
+  const bar=document.getElementById('aiConfBar');
+  bar.style.width=confN+'%'; bar.style.background=confN>=80?'#4ade80':confN>=50?'#fcd34d':'#475569';
 
-  // Position & P/L
-  document.getElementById("positionText").textContent = d.currentPosition || "Flat";
-  const pnlEl = document.getElementById("pnlText");
-  if (d.entryPrice && d.currentPosition && d.currentPosition !== "Flat") {
-    const ap = d.currentPosition === "GUSH" ? d.gushPrice : d.dripPrice;
-    const pnl = ((ap - d.entryPrice) / d.entryPrice * 100).toFixed(2);
-    pnlEl.textContent = "P/L: " + pnl + "%";
-    pnlEl.style.color = parseFloat(pnl) >= 0 ? "#86efac" : "#fca5a5";
+  // Position
+  document.getElementById('aiPositionText').textContent = d.currentPosition||'Flat';
+  const pnlEl=document.getElementById('aiPnlText');
+  const posCard=document.getElementById('aiPosCard');
+  if (d.entryPrice && d.currentPosition && d.currentPosition!=='Flat') {
+    const ap2 = d.currentPosition==='GUSH' ? d.gushPrice : d.dripPrice;
+    const pnl = ((ap2-d.entryPrice)/d.entryPrice*100).toFixed(2);
+    pnlEl.textContent='Entry $'+d.entryPrice.toFixed(2)+' · P/L: '+(parseFloat(pnl)>=0?'+':'')+pnl+'%';
+    pnlEl.style.color=parseFloat(pnl)>=0?'#4ade80':'#f87171';
+    posCard.className=parseFloat(pnl)>=0?'sig-card ac-green':'sig-card ac-red';
+  } else { pnlEl.textContent='No open position'; pnlEl.style.color=''; posCard.className='sig-card'; }
+
+  // Analysis
+  const uD=(d.usoPrice-d.usoMA9).toFixed(2), xD=(d.xopPrice-d.xopMA9).toFixed(2), gD=(d.gushPrice-d.gushMA9).toFixed(2), dD=(d.dripPrice-d.dripMA9).toFixed(2);
+  let reason='';
+  if (trendingBullish) reason='USO is '+(parseFloat(uD)>=0?'+':'')+uD+' vs MA9 with XOP '+(parseFloat(xD)>=0?'+':'')+xD+' confirming. GUSH is '+(parseFloat(gD)>=0?'above':'below')+' MA9 by $'+Math.abs(gD)+'.';
+  else if (trendingBearish) reason='USO is '+uD+' vs MA9. XOP confirming at '+xD+'. DRIP '+(parseFloat(dD)>=0?'above':'below')+' MA9 by $'+Math.abs(dD)+'.';
+  else if (mixed) reason='USO '+(usoAboveMA9?'above':'below')+' MA9 but XOP '+(xopAboveMA9?'above':'below')+' MA9. Divergence = no clean trade.';
+  else reason='No trend. USO and XOP near MA9 with low momentum. Avoid leveraged ETF trades here.';
+  document.getElementById('aiReasonText').textContent=reason;
+
+  // Trigger / Invalidation
+  const te=document.getElementById('aiTriggerText'), ie=document.getElementById('aiInvalidText');
+  if (activeTicker==='GUSH') {
+    te.textContent='❆ Entry above $'+d.gushRecentHigh.toFixed(2)+' on volume';
+    ie.textContent='✕ Invalid if GUSH closes below MA21 ($'+(d.gushMA21||d.gushMA9*.975).toFixed(2)+') or USO loses MA9';
+  } else if (activeTicker==='DRIP') {
+    te.textContent='❆ Entry above $'+d.dripRecentHigh.toFixed(2)+' on volume';
+    ie.textContent='✕ Invalid if DRIP closes below MA21 ($'+(d.dripMA21||d.dripMA9*.975).toFixed(2)+') or XOP reclaims MA9';
   } else {
-    pnlEl.textContent = "";
-  }
-
-  // Reason
-  const gvMA = (d.gushPrice - d.gushMA9).toFixed(2);
-  const dvMA = (d.dripPrice - d.dripMA9).toFixed(2);
-  document.getElementById("reasonText").textContent =
-    bullish
-      ? "GUSH " + (parseFloat(gvMA) >= 0 ? "above" : "below") + " MA9 by $" + Math.abs(gvMA) + ". USO + XOP both above MA9 confirm bullish oil trend."
-      : bearish
-      ? "DRIP " + (parseFloat(dvMA) >= 0 ? "above" : "below") + " MA9 by $" + Math.abs(dvMA) + ". USO + XOP both below MA9 confirm bearish oil trend."
-      : "USO and XOP diverging — no clean directional edge. Avoid leveraged ETF trades.";
-
-  // Trigger & Invalidation
-  const trigEl = document.getElementById("triggerText");
-  const invEl = document.getElementById("invalidationText");
-  if (activeTicker === "GUSH") {
-    trigEl.textContent = "✦ Entry: GUSH breaks above $" + d.gushRecentHigh.toFixed(2) + " on volume";
-    invEl.textContent = "✕ Invalid: GUSH closes below MA9 ($" + d.gushMA9.toFixed(2) + ") or USO loses MA9";
-  } else if (activeTicker === "DRIP") {
-    trigEl.textContent = "✦ Entry: DRIP breaks above $" + d.dripRecentHigh.toFixed(2) + " on volume";
-    invEl.textContent = "✕ Invalid: DRIP closes below MA9 ($" + d.dripMA9.toFixed(2) + ") or XOP reclaims MA9";
-  } else {
-    trigEl.textContent = "Wait for USO + XOP to align on same side of MA9";
-    invEl.textContent = "No active setup";
+    te.textContent='Wait for USO + XOP to align on same side of MA9';
+    ie.textContent='No active setup';
   }
 
   // Trade Plan
-  const ap = activeTicker === "GUSH" ? d.gushPrice
-    : activeTicker === "DRIP" ? d.dripPrice : null;
-  const aMA21 = activeTicker === "GUSH" ? (d.gushMA21 || d.gushMA9 * 0.975)
-    : activeTicker === "DRIP" ? (d.dripMA21 || d.dripMA9 * 0.975) : null;
-  const rh = activeTicker === "GUSH" ? d.gushRecentHigh
-    : activeTicker === "DRIP" ? d.dripRecentHigh : null;
-  if (ap) {
-    document.getElementById("entryText").textContent  = "Entry  $" + rh.toFixed(2) + " breakout";
-    document.getElementById("stopText").textContent   = "Stop   $" + aMA21.toFixed(2) + " (below MA21)";
-    document.getElementById("target1Text").textContent = "T1     $" + (ap * 1.08).toFixed(2) + " (+8%)";
-    document.getElementById("target2Text").textContent = "T2     $" + (ap * 1.15).toFixed(2) + " (+15%)";
+  const ap3 = activeTicker==='GUSH'?d.gushPrice:activeTicker==='DRIP'?d.dripPrice:null;
+  const aM21 = activeTicker==='GUSH'?(d.gushMA21||d.gushMA9*.975):activeTicker==='DRIP'?(d.dripMA21||d.dripMA9*.975):null;
+  const rh2 = activeTicker==='GUSH'?d.gushRecentHigh:activeTicker==='DRIP'?d.dripRecentHigh:null;
+  if (ap3&&rh2) {
+    document.getElementById('aiEntry').textContent='$'+rh2.toFixed(2)+' breakout';
+    document.getElementById('aiStop').textContent='$'+aM21.toFixed(2);
+    document.getElementById('aiT1').textContent='$'+(ap3*1.08).toFixed(2);
+    document.getElementById('aiT2').textContent='$'+(ap3*1.15).toFixed(2);
   } else {
-    document.getElementById("entryText").textContent  = "No setup";
-    document.getElementById("stopText").textContent   = "—";
-    document.getElementById("target1Text").textContent = "—";
-    document.getElementById("target2Text").textContent = "—";
+    document.getElementById('aiEntry').textContent='No setup';
+    ['aiStop','aiT1','aiT2'].forEach(id=>document.getElementById(id).textContent='—');
   }
+
+  document.getElementById('aiPanelTS').textContent='Updated '+new Date().toLocaleTimeString();
 }
     </script>
 </body>
