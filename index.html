@@ -1594,6 +1594,27 @@
             updateRecommendations();
             checkAlerts();
             updatePortfolioDisplay();
+            // Auto-update AI panel
+            if (typeof updateEnergyAISignal === 'function') {
+                const hist = state.priceHistory || [];
+                const rh = (t) => { const v=hist.slice(-5).map(b=>b&&b[t]).filter(x=>x!=null); return v.length?Math.max(...v):(state.prices[t]||0); };
+                updateEnergyAISignal({
+                    gushPrice: state.prices.GUSH||0,
+                    dripPrice: state.prices.DRIP||0,
+                    xopPrice:  state.prices.XOP||0,
+                    usoPrice:  state.prices.USO||0,
+                    gushMA9:  state.movingAverages.GUSH?.MA9||0,
+                    dripMA9:  state.movingAverages.DRIP?.MA9||0,
+                    xopMA9:   state.movingAverages.XOP?.MA9||0,
+                    usoMA9:   state.movingAverages.USO?.MA9||0,
+                    gushMA21: state.movingAverages.GUSH?.MA21||0,
+                    dripMA21: state.movingAverages.DRIP?.MA21||0,
+                    gushRecentHigh: rh('GUSH'),
+                    dripRecentHigh: rh('DRIP'),
+                    currentPosition: null,
+                    entryPrice: null
+                });
+            }
         }
 
         function updateSignalDisplay() {
@@ -1806,59 +1827,111 @@
         }, 8000);
     </script>
     <script>
-function updateEnergyAISignal(d){
-
+function updateEnergyAISignal(d) {
   const bullish = d.usoPrice > d.usoMA9 && d.xopPrice > d.xopMA9;
   const bearish = d.usoPrice < d.usoMA9 && d.xopPrice < d.xopMA9;
 
-  let signal="NO TRADE", ticker="NONE", confidence="LOW";
+  let signal = "NO TRADE", ticker = "NONE";
+  let activeTicker = null;
 
-  if(bullish && d.gushPrice>d.gushRecentHigh){
-    signal="BUY"; ticker="GUSH"; confidence="HIGH";
+  if (bullish && d.gushPrice > d.gushRecentHigh) {
+    signal = "BUY"; ticker = "GUSH"; activeTicker = "GUSH";
+  } else if (bearish && d.dripPrice > d.dripRecentHigh) {
+    signal = "BUY"; ticker = "DRIP"; activeTicker = "DRIP";
+  } else if (bullish) {
+    signal = "WATCH"; ticker = "GUSH"; activeTicker = "GUSH";
+  } else if (bearish) {
+    signal = "WATCH"; ticker = "DRIP"; activeTicker = "DRIP";
   }
-  else if(bearish && d.dripPrice>d.dripRecentHigh){
-    signal="BUY"; ticker="DRIP"; confidence="HIGH";
+
+  // Market Regime
+  const rb = document.getElementById("regimeBadge");
+  const rt = document.getElementById("regimeText");
+  if (bullish) {
+    rb.textContent = "BULLISH"; rb.className = "signal-badge badge-bullish";
+    rt.textContent = "USO & XOP above MA9 — oil trending up";
+  } else if (bearish) {
+    rb.textContent = "BEARISH"; rb.className = "signal-badge badge-bearish";
+    rt.textContent = "USO & XOP below MA9 — oil trending down";
+  } else {
+    rb.textContent = "CHOP"; rb.className = "signal-badge badge-chop";
+    rt.textContent = "Mixed signals — stay flat";
   }
 
-  document.getElementById("signalBadge").textContent=signal;
-  document.getElementById("signalTicker").textContent=ticker;
-  document.getElementById("confidenceValue").textContent=confidence;
-  document.getElementById("scoreText").textContent="Simple Mode";
-
+  // Signal
+  const sb = document.getElementById("signalBadge");
+  sb.textContent = signal;
+  sb.className = signal === "BUY" ? "signal-badge badge-buy"
+    : signal === "WATCH" ? "signal-badge badge-watch"
+    : "signal-badge badge-neutral";
+  document.getElementById("signalTicker").textContent = ticker;
   document.getElementById("signalSummary").textContent =
-    bullish ? "Bullish oil + XOP alignment"
-    : bearish ? "Bearish oil + XOP alignment"
-    : "No alignment";
+    bullish ? "USO & XOP aligned bullish"
+    : bearish ? "USO & XOP aligned bearish"
+    : "No directional alignment";
 
-  document.getElementById("regimeBadge").textContent =
-    bullish ? "BULLISH"
-    : bearish ? "BEARISH"
-    : "CHOP";
+  // Confidence
+  const confPct = signal === "BUY" ? "85%" : signal === "WATCH" ? "55%" : "20%";
+  document.getElementById("confidenceValue").textContent = confPct;
+  document.getElementById("confidenceValue").style.color =
+    signal === "BUY" ? "#86efac" : signal === "WATCH" ? "#fde68a" : "#94a3b8";
+  document.getElementById("scoreText").textContent =
+    "USO vs MA9: " + (d.usoPrice - d.usoMA9).toFixed(2) +
+    " · XOP vs MA9: " + (d.xopPrice - d.xopMA9).toFixed(2);
 
-  document.getElementById("regimeText").textContent =
-    bullish ? "Trend up"
-    : bearish ? "Trend down"
-    : "Stay out";
+  // Position & P/L
+  document.getElementById("positionText").textContent = d.currentPosition || "Flat";
+  const pnlEl = document.getElementById("pnlText");
+  if (d.entryPrice && d.currentPosition && d.currentPosition !== "Flat") {
+    const ap = d.currentPosition === "GUSH" ? d.gushPrice : d.dripPrice;
+    const pnl = ((ap - d.entryPrice) / d.entryPrice * 100).toFixed(2);
+    pnlEl.textContent = "P/L: " + pnl + "%";
+    pnlEl.style.color = parseFloat(pnl) >= 0 ? "#86efac" : "#fca5a5";
+  } else {
+    pnlEl.textContent = "";
+  }
 
+  // Reason
+  const gvMA = (d.gushPrice - d.gushMA9).toFixed(2);
+  const dvMA = (d.dripPrice - d.dripMA9).toFixed(2);
   document.getElementById("reasonText").textContent =
-    "Based on oil + XOP alignment";
+    bullish
+      ? "GUSH " + (parseFloat(gvMA) >= 0 ? "above" : "below") + " MA9 by $" + Math.abs(gvMA) + ". USO + XOP both above MA9 confirm bullish oil trend."
+      : bearish
+      ? "DRIP " + (parseFloat(dvMA) >= 0 ? "above" : "below") + " MA9 by $" + Math.abs(dvMA) + ". USO + XOP both below MA9 confirm bearish oil trend."
+      : "USO and XOP diverging — no clean directional edge. Avoid leveraged ETF trades.";
 
-  document.getElementById("triggerText").textContent =
-    "Breakout confirmation";
+  // Trigger & Invalidation
+  const trigEl = document.getElementById("triggerText");
+  const invEl = document.getElementById("invalidationText");
+  if (activeTicker === "GUSH") {
+    trigEl.textContent = "✦ Entry: GUSH breaks above $" + d.gushRecentHigh.toFixed(2) + " on volume";
+    invEl.textContent = "✕ Invalid: GUSH closes below MA9 ($" + d.gushMA9.toFixed(2) + ") or USO loses MA9";
+  } else if (activeTicker === "DRIP") {
+    trigEl.textContent = "✦ Entry: DRIP breaks above $" + d.dripRecentHigh.toFixed(2) + " on volume";
+    invEl.textContent = "✕ Invalid: DRIP closes below MA9 ($" + d.dripMA9.toFixed(2) + ") or XOP reclaims MA9";
+  } else {
+    trigEl.textContent = "Wait for USO + XOP to align on same side of MA9";
+    invEl.textContent = "No active setup";
+  }
 
-  document.getElementById("invalidationText").textContent =
-    "Loss of trend";
-
-  document.getElementById("entryText").textContent="Breakout";
-  document.getElementById("stopText").textContent="Below MA21";
-  document.getElementById("target1Text").textContent="1.5R";
-  document.getElementById("target2Text").textContent="3R";
-
-  document.getElementById("positionText").textContent=d.currentPosition||"Flat";
-
-  if(d.entryPrice){
-    const pnl=((d.gushPrice-d.entryPrice)/d.entryPrice*100).toFixed(2);
-    document.getElementById("pnlText").textContent="P/L: "+pnl+"%";
+  // Trade Plan
+  const ap = activeTicker === "GUSH" ? d.gushPrice
+    : activeTicker === "DRIP" ? d.dripPrice : null;
+  const aMA21 = activeTicker === "GUSH" ? (d.gushMA21 || d.gushMA9 * 0.975)
+    : activeTicker === "DRIP" ? (d.dripMA21 || d.dripMA9 * 0.975) : null;
+  const rh = activeTicker === "GUSH" ? d.gushRecentHigh
+    : activeTicker === "DRIP" ? d.dripRecentHigh : null;
+  if (ap) {
+    document.getElementById("entryText").textContent  = "Entry  $" + rh.toFixed(2) + " breakout";
+    document.getElementById("stopText").textContent   = "Stop   $" + aMA21.toFixed(2) + " (below MA21)";
+    document.getElementById("target1Text").textContent = "T1     $" + (ap * 1.08).toFixed(2) + " (+8%)";
+    document.getElementById("target2Text").textContent = "T2     $" + (ap * 1.15).toFixed(2) + " (+15%)";
+  } else {
+    document.getElementById("entryText").textContent  = "No setup";
+    document.getElementById("stopText").textContent   = "—";
+    document.getElementById("target1Text").textContent = "—";
+    document.getElementById("target2Text").textContent = "—";
   }
 }
     </script>
