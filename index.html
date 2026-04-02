@@ -618,6 +618,76 @@
         }
         .notif-btn.active { border-color: #00FF41; color: #00FF41; }
 
+        /* ── UI Polish Override ── */
+        body { font-size: 13px; padding: 16px; background: #050508; }
+        .container { max-width: 1600px; }
+        .header { border-radius: 10px; border-color: rgba(255,153,0,.35); padding: 12px 20px; margin-bottom: 16px; background: #0a0a0f; font-size: 12px; }
+        .title { font-size: 13px; letter-spacing: 1px; }
+        .price-grid { gap: 12px; margin-bottom: 16px; }
+        .price-box { background: #0d1117; border: 1px solid #1e293b; border-radius: 10px; padding: 16px; font-size: 12px; transition: border-color .2s; }
+        .price-box:hover { border-color: rgba(255,153,0,.35); }
+        .ticker-name { font-size: 14px; margin-bottom: 8px; letter-spacing: 1px; }
+        .price-row { font-size: 24px; margin-bottom: 6px; font-weight: bold; }
+        .price-row span:first-child { color: #f1f5f9; }
+        .secondary-info { font-size: 11px; color: #64748b; margin-bottom: 6px; }
+        .volume-info { font-size: 11px; color: #475569; }
+        .signals-grid { gap: 12px; margin-bottom: 16px; }
+        .signal-box { background: #0d1117; border: 1px solid #1e293b; border-radius: 10px; padding: 16px; font-size: 12px; }
+        .signal-title { font-size: 11px; letter-spacing: 1.5px; color: #f59e0b; margin-bottom: 10px; }
+        .signal-value { font-size: 22px; margin-bottom: 10px; }
+        .confidence { font-size: 11px; color: #64748b; margin-top: 6px; }
+        .breakdown { font-size: 10px; color: #475569; padding-top: 8px; margin-top: 10px; }
+        .breakdown-item { margin-bottom: 4px; line-height: 1.5; }
+        .rec-panel { gap: 12px; margin-bottom: 16px; }
+        .rec-box { background: #0d1117; border: 1px solid rgba(255,153,0,.2); border-radius: 10px; padding: 16px; }
+        .rec-header { font-size: 11px; letter-spacing: 1.5px; margin-bottom: 10px; padding-bottom: 8px; }
+        .rec-action { font-size: 20px; letter-spacing: 2px; margin-bottom: 8px; }
+        .rec-reasoning { font-size: 11px; color: #94a3b8; line-height: 1.6; margin-bottom: 8px; }
+        .rec-threshold { font-size: 10px; color: #475569; padding-top: 8px; }
+        .tech-grid { gap: 12px; margin-bottom: 16px; }
+        .tech-box { background: #0d1117; border: 1px solid #1e293b; border-radius: 8px; padding: 14px; font-size: 11px; }
+        .tech-title { font-size: 11px; letter-spacing: 1px; margin-bottom: 8px; }
+        .tech-ticker { font-size: 12px; margin-bottom: 6px; margin-top: 4px; }
+        .tech-value { font-size: 11px; color: #64748b; margin-bottom: 5px; }
+        .moving-avg-grid { gap: 12px; margin-bottom: 16px; }
+        .moving-avg-box { background: #0d1117; border: 1px solid #1e293b; border-radius: 8px; padding: 14px; font-size: 11px; }
+        .chart-container { background: #0d1117; border: 1px solid #1e293b; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+        .chart-title { font-size: 11px; letter-spacing: 1px; margin-bottom: 10px; }
+        .signal-log { background: #0d1117; border: 1px solid #1e293b; border-radius: 8px; padding: 14px; margin-bottom: 16px; }
+        .log-title { font-size: 11px; letter-spacing: 1px; margin-bottom: 8px; }
+        .log-content { font-size: 11px; }
+        .log-entry { margin-bottom: 5px; padding-bottom: 5px; }
+        .log-time { font-size: 10px; min-width: 70px; }
+        .log-type { min-width: 80px; font-size: 10px; }
+        .log-message { font-size: 11px; color: #94a3b8; }
+        .portfolio-section { background: #020215; border: 1px solid rgba(0,255,255,.15); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+        .portfolio-title { font-size: 12px; margin-bottom: 12px; }
+        .portfolio-table th { font-size: 10px; padding: 6px 10px; letter-spacing: 1px; }
+        .portfolio-table td { padding: 7px 10px; font-size: 11px; }
+        .port-label { font-size: 10px; color: #64748b; }
+        .portfolio-input, .portfolio-select { padding: 6px 8px; font-size: 11px; border-radius: 4px; }
+        .news-ticker { border-radius: 6px; font-size: 11px; padding: 7px 12px; margin-bottom: 16px; border-color: rgba(255,153,0,.3); }
+        .button { padding: 6px 12px; border-radius: 6px; font-size: 11px; }
+        .heatmap-cell { border-radius: 4px; padding: 6px; }
+        .heatmap-label { font-size: 10px; }
+        .heatmap-value { font-size: 13px; }
+        .geo-risk-score { font-size: 22px; }
+        .progress-bar { border-radius: 3px; height: 5px; }
+        @media (max-width:900px) {
+          body { padding: 10px; }
+          .price-grid { grid-template-columns: repeat(2,1fr); }
+          .signals-grid { grid-template-columns: 1fr; }
+          .rec-panel { grid-template-columns: 1fr; }
+          .tech-grid { grid-template-columns: 1fr 1fr; }
+          .moving-avg-grid { grid-template-columns: repeat(2,1fr); }
+        }
+        @media (max-width:600px) {
+          .price-grid { grid-template-columns: 1fr 1fr; }
+          .tech-grid { grid-template-columns: 1fr; }
+          .header { flex-direction: column; gap: 10px; align-items: flex-start; }
+          .header-right { flex-wrap: wrap; gap: 10px; }
+        }
+
         /* ── AI Signal Panel ── */
         .ai-signal-section { margin-top: 20px; }
         .ai-panel-header { display:flex; align-items:center; gap:12px; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid rgba(0,255,65,0.15); }
