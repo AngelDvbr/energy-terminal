@@ -1477,7 +1477,10 @@
 
                 for (const ticker of TICKERS) {
                     const aggs = aggregatesData[ticker];
-                    if (!aggs || aggs.length === 0) continue;
+                    if (!aggs || aggs.length < 14) {
+                        console.warn('Not enough data for indicators on ' + ticker);
+                        continue;
+                    }
 
                     const closes = aggs.map(bar => bar.c);
                     const rsi = calculateRSI(closes, 14);
@@ -1515,7 +1518,8 @@
                         };
                     }
                 }
-                state.dataStatus = "LIVE";
+                const validPriceCount = TICKERS.filter(t => state.prices[t] && state.prices[t] > 0).length;
+                state.dataStatus = validPriceCount >= 2 ? "LIVE" : "ERROR";
                 updateStatus();
                 updateUI();
                 updateChart();
@@ -1669,14 +1673,14 @@
                 const highLow = state.dayHighLow[ticker];
                 const volume = state.volumes[ticker];
 
-                document.getElementById(`price-${ticker}`).textContent = (price || 0).toFixed(2);
+                document.getElementById(`price-${ticker}`).textContent = price ? price.toFixed(2) : '—';
                 const changeEl = document.getElementById(`change-${ticker}`);
                 const changeClass = (change?.dollar || 0) >= 0 ? 'price-up' : 'price-down';
-                changeEl.textContent = (change.dollar >= 0 ? '+' : '') + (change?.dollar || 0).toFixed(2) + ' (' + (change?.percent || 0).toFixed(2) + '%)';
+                changeEl.textContent = (change.dollar >= 0 ? '+' : '') + change?.dollar ? change.dollar.toFixed(2) : '—' + ' (' + change?.percent ? change.percent.toFixed(2) : '—' + '%)';
                 changeEl.className = changeClass;
 
-                document.getElementById(`high-${ticker}`).textContent = (highLow?.high || 0).toFixed(2);
-                document.getElementById(`low-${ticker}`).textContent = (highLow?.low || 0).toFixed(2);
+                document.getElementById(`high-${ticker}`).textContent = highLow?.high ? highLow.high.toFixed(2) : '—';
+                document.getElementById(`low-${ticker}`).textContent = highLow?.low ? highLow.low.toFixed(2) : '—';
                 document.getElementById(`vol-${ticker}`).textContent = (volume / 1000000).toFixed(1);
             }
 
