@@ -1869,57 +1869,59 @@ function updateAISignalPanel(d) {
   const gushAboveMA9 = d.gushPrice > d.gushMA9;
   const dripAboveMA9 = d.dripPrice > d.dripMA9;
 
-  const trendingBullish = usoAboveMA9 && usoAboveMA21 && xopAboveMA9;
-  const trendingBearish = !usoAboveMA9 && !usoAboveMA21 && !xopAboveMA9;
-  const mixed = (usoAboveMA9 && !xopAboveMA9) || (!usoAboveMA9 && xopAboveMA9);
+  // New trend/breakout variables
+  const usoTrend = (state.prices.USO > (state.movingAverages?.USO?.ma9 || 0)) ? "UP" : "DOWN";
+  const xopTrend = (state.prices.XOP > (state.movingAverages?.XOP?.ma9 || 0)) ? "UP" : "DOWN";
+  const gushBreakout = state.prices.GUSH > (state.movingAverages?.GUSH?.ma9 || 0);
+  const dripBreakout = state.prices.DRIP > (state.movingAverages?.DRIP?.ma9 || 0);
+
+  // MARKET DIRECTION
+  let bias;
+  if (usoTrend === "UP" && xopTrend === "UP") {
+    bias = "BULLISH";
+  }
+  else if (usoTrend === "DOWN" && xopTrend === "DOWN") {
+    bias = "BEARISH";
+  }
+  else {
+    bias = "CHOP";
+  }
+
+  // Backward compatibility aliases
+  const trendingBullish = bias === "BULLISH";
+  const trendingBearish = bias === "BEARISH";
+  const mixed = bias === "CHOP";
 
   // Market Regime
   const rb = document.getElementById('aiRegimeBadge');
   const rt = document.getElementById('aiRegimeText');
   const rc = document.getElementById('aiRegimeCard');
-  if (trendingBullish) {
-    rb.textContent='TRENDING BULLISH'; rb.className='rg-badge rg-bull';
-    rt.textContent='USO + XOP above MA9 & MA21'; rc.className='sig-card ac-green';
-  } else if (trendingBearish) {
-    rb.textContent='TRENDING BEARISH'; rb.className='rg-badge rg-bear';
-    rt.textContent='USO + XOP below MA9 & MA21'; rc.className='sig-card ac-red';
-  } else if (mixed) {
-    rb.textContent='MIXED'; rb.className='rg-badge rg-mixed';
-    rt.textContent='USO and XOP diverging'; rc.className='sig-card ac-blue';
-  } else {
-    rb.textContent='RANGE / CHOP'; rb.className='rg-badge rg-chop';
-    rt.textContent='No directional trend — stay flat'; rc.className='sig-card ac-amber';
+  if (rb) {
+    rb.textContent = bias;
+    rb.className = bias === 'BULLISH' ? 'rg-badge badge-bullish' : bias === 'BEARISH' ? 'rg-badge badge-bearish' : 'rg-badge badge-neutral';
   }
-
-  // Signal Logic
-  let signal='NO TRADE', sClass='ss-none', activeTicker=null;
+  if (rt) rt.textContent = bias === 'BULLISH' ? 'USO + XOP above MA9' : bias === 'BEARISH' ? 'USO + XOP below MA9' : 'No directional trend — stay flat';
+  if (rc) rc.className = bias === 'BULLISH' ? 'sig-card ac-green' : bias === 'BEARISH' ? 'sig-card ac-red' : 'sig-card ac-amber';
+  // SIGNAL
   const sc = document.getElementById('aiSignalCard');
-
-  if (d.currentPosition && d.currentPosition !== 'Flat' && d.entryPrice) {
-    const ap = d.currentPosition==='GUSH' ? d.gushPrice : d.dripPrice;
-    const aMA21 = d.currentPosition==='GUSH' ? (d.gushMA21||d.gushMA9*.97) : (d.dripMA21||d.dripMA9*.97);
-    const pnlPct = (ap - d.entryPrice) / d.entryPrice * 100;
-    activeTicker = d.currentPosition;
-    if (pnlPct >= 8) { signal='TAKE PROFIT'; sClass='ss-profit'; }
-    else if (ap < aMA21) { signal='CUT LOSS'; sClass='ss-cut'; }
-    else if ((d.currentPosition==='GUSH'&&trendingBullish)||(d.currentPosition==='DRIP'&&trendingBearish)) { signal='HOLD'; sClass='ss-hold'; }
-    else { signal='NO TRADE'; activeTicker=null; }
+  let signal;
+  if (bias === "BULLISH" && gushBreakout) {
+    signal = "BUY GUSH";
   }
-
-  if (signal==='NO TRADE') {
-    if (trendingBullish && gushAboveMA9 && d.gushPrice > d.gushRecentHigh) { signal='BUY'; sClass='ss-buy'; activeTicker='GUSH'; }
-    else if (trendingBearish && dripAboveMA9 && d.dripPrice > d.dripRecentHigh) { signal='BUY'; sClass='ss-buy'; activeTicker='DRIP'; }
-    else if (trendingBullish && gushAboveMA9) { signal='WATCHLIST'; sClass='ss-watch'; activeTicker='GUSH'; }
-    else if (trendingBearish && dripAboveMA9) { signal='WATCHLIST'; sClass='ss-watch'; activeTicker='DRIP'; }
+  else if (bias === "BEARISH" && dripBreakout) {
+    signal = "BUY DRIP";
   }
+  else {
+    signal = "NO TRADE";
+  }
+  let sClass = signal === 'BUY GUSH' ? 'ss-buy' : signal === 'BUY DRIP' ? 'ss-buy' : 'ss-none';
+  let activeTicker = signal === 'BUY GUSH' ? 'GUSH' : signal === 'BUY DRIP' ? 'DRIP' : null;
 
-  sc.className = (signal==='BUY'||signal==='HOLD'||signal==='TAKE PROFIT') ? 'sig-card ac-green'
-    : signal==='CUT LOSS' ? 'sig-card ac-red'
-    : signal==='WATCHLIST' ? 'sig-card ac-amber' : 'sig-card';
+  sc.className = signal === 'BUY GUSH' ? 'sig-card ac-green' : signal === 'BUY DRIP' ? 'sig-card ac-green' : 'sig-card';
 
   const sb = document.getElementById('aiSignalBadge');
-  sb.textContent=signal; sb.className='ss-badge '+sClass;
-  if (signal==='BUY') sb.classList.add('pulsing'); else sb.classList.remove('pulsing');
+  sb.textContent=signal; sb.className = signal === 'BUY GUSH' ? 'ss-badge badge-bullish' : signal === 'BUY DRIP' ? 'ss-badge badge-bearish' : 'ss-badge badge-neutral';
+  if (signal==='BUY GUSH' || signal==='BUY DRIP') sb.classList.add('pulsing'); else sb.classList.remove('pulsing');
   document.getElementById('aiSignalTicker').textContent = activeTicker||'---';
   document.getElementById('aiSignalSummary').textContent =
     trendingBullish ? 'Bullish oil + XOP alignment'
