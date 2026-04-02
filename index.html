@@ -730,6 +730,93 @@
           .analysis-grid { grid-template-columns:1fr; }
           .tp-grid4 { grid-template-columns:repeat(2,1fr); }
         }
+
+/* ── Alerts Panel ── */
+.alerts-panel {
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 16px 0;
+}
+.alerts-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #21262d;
+  padding-bottom: 10px;
+}
+.alerts-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #8b949e;
+  text-transform: uppercase;
+  flex: 1;
+}
+.alerts-count {
+  font-size: 11px;
+  color: #484f58;
+}
+.alerts-clear {
+  background: none;
+  border: 1px solid #30363d;
+  color: #8b949e;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+}
+.alerts-clear:hover { border-color: #8b949e; color: #e6edf3; }
+.alerts-feed { display: flex; flex-direction: column; gap: 6px; }
+.alerts-empty { color: #484f58; font-size: 12px; text-align: center; padding: 16px 0; }
+.alert-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: #161b22;
+  border-left: 3px solid #30363d;
+  animation: alertSlideIn 0.3s ease;
+}
+@keyframes alertSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.alert-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+.alert-badge.bullish  { background: rgba(35,134,54,0.25); color: #3fb950; border: 1px solid #238636; }
+.alert-badge.bearish  { background: rgba(248,81,73,0.15);  color: #f85149; border: 1px solid #da3633; }
+.alert-badge.watchlist{ background: rgba(210,153,34,0.15); color: #e3b341; border: 1px solid #9e6a03; }
+.alert-badge.neutral  { background: rgba(139,148,158,0.1); color: #8b949e; border: 1px solid #30363d; }
+.alert-badge.georisk  { background: rgba(163,113,247,0.15);color: #a371f7; border: 1px solid #8957e5; }
+.alert-badge.danger   { background: rgba(248,81,73,0.2);   color: #f85149; border: 1px solid #da3633; }
+.alert-row.bullish  { border-left-color: #238636; }
+.alert-row.bearish  { border-left-color: #da3633; }
+.alert-row.watchlist{ border-left-color: #9e6a03; }
+.alert-row.neutral  { border-left-color: #30363d; }
+.alert-row.georisk  { border-left-color: #8957e5; }
+.alert-row.danger   { border-left-color: #da3633; }
+.alert-body { flex: 1; min-width: 0; }
+.alert-headline { font-size: 12px; font-weight: 600; color: #e6edf3; margin-bottom: 2px; }
+.alert-desc { font-size: 11px; color: #8b949e; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alert-footer { display: flex; align-items: center; gap: 8px; }
+.alert-priority { font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
+.alert-priority.HIGH   { color: #f85149; }
+.alert-priority.MEDIUM { color: #e3b341; }
+.alert-priority.LOW    { color: #484f58; }
+.alert-time { font-size: 10px; color: #484f58; }
     </style>
 </head>
 <body>
@@ -931,6 +1018,18 @@
           </div>
 
         </section>
+
+        <!-- Alerts Panel -->
+        <div class="alerts-panel" id="alertsPanel">
+          <div class="alerts-header">
+            <span class="alerts-title">⚡ LIVE ALERTS</span>
+            <span class="alerts-count" id="alertsCount">0 alerts</span>
+            <button class="alerts-clear" onclick="clearAlerts()">Clear</button>
+          </div>
+          <div class="alerts-feed" id="alertsFeed">
+            <div class="alerts-empty">No alerts yet — waiting for data...</div>
+          </div>
+        </div>
 
         <!-- My Portfolio -->
         <div class="portfolio-section">
@@ -1988,5 +2087,179 @@ function updateAISignalPanel(d) {
   document.getElementById('aiPanelTS').textContent='Updated '+new Date().toLocaleTimeString();
 }
     </script>
+
+<script>
+
+// ── Alert System ────────────────────────────────────────────────
+const MAX_ALERTS = 10;
+const alertHistory = [];
+const alertDedup = new Set();
+
+const ALERT_TYPE_MAP = {
+  "TRENDING BULLISH":     { cls: "bullish",   pri: "MEDIUM" },
+  "TRENDING BEARISH":     { cls: "bearish",   pri: "MEDIUM" },
+  "RANGE / CHOP":         { cls: "neutral",   pri: "LOW"    },
+  "MIXED":                { cls: "neutral",   pri: "LOW"    },
+  "GUSH WATCHLIST":       { cls: "watchlist", pri: "LOW"    },
+  "GUSH BUY TRIGGER":     { cls: "bullish",   pri: "HIGH"   },
+  "DRIP WATCHLIST":       { cls: "watchlist", pri: "LOW"    },
+  "DRIP BUY TRIGGER":     { cls: "bearish",   pri: "HIGH"   },
+  "NO TRADE":             { cls: "neutral",   pri: "MEDIUM" },
+  "TAKE PROFIT":          { cls: "bullish",   pri: "HIGH"   },
+  "CUT LOSS":             { cls: "danger",    pri: "HIGH"   },
+  "SWITCH GUSH TO DRIP":  { cls: "bearish",   pri: "HIGH"   },
+  "SWITCH DRIP TO GUSH":  { cls: "bullish",   pri: "HIGH"   },
+  "LIVE DATA FAILED":     { cls: "danger",    pri: "HIGH"   },
+  "DATA UNAVAILABLE":     { cls: "danger",    pri: "HIGH"   },
+  "HIGH GEO RISK":        { cls: "georisk",   pri: "MEDIUM" },
+  "SIGNAL LOW CONFIDENCE":{ cls: "watchlist", pri: "LOW"    },
+};
+
+function addAlert(headline, desc, priority) {
+  const key = headline;
+  if (alertDedup.has(key)) return;
+  alertDedup.add(key);
+
+  const meta = ALERT_TYPE_MAP[headline] || { cls: "neutral", pri: priority || "LOW" };
+  const pri  = priority || meta.pri;
+  const now  = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  alertHistory.unshift({ headline, desc, priority: pri, cls: meta.cls, time: now });
+  if (alertHistory.length > MAX_ALERTS) alertHistory.pop();
+
+  renderAlerts();
+}
+
+function clearAlerts() {
+  alertHistory.length = 0;
+  alertDedup.clear();
+  renderAlerts();
+}
+
+function renderAlerts() {
+  const feed  = document.getElementById('alertsFeed');
+  const count = document.getElementById('alertsCount');
+  if (!feed) return;
+
+  if (alertHistory.length === 0) {
+    feed.innerHTML = '<div class="alerts-empty">No alerts — waiting for data...</div>';
+    if (count) count.textContent = '0 alerts';
+    return;
+  }
+
+  if (count) count.textContent = alertHistory.length + ' alert' + (alertHistory.length !== 1 ? 's' : '');
+
+  feed.innerHTML = alertHistory.map(a => `
+    <div class="alert-row ${a.cls}">
+      <span class="alert-badge ${a.cls}">${a.headline}</span>
+      <div class="alert-body">
+        <div class="alert-headline">${a.headline}</div>
+        <div class="alert-desc">${a.desc}</div>
+        <div class="alert-footer">
+          <span class="alert-priority ${a.priority}">${a.priority}</span>
+          <span class="alert-time">${a.time}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function runAlertLogic() {
+  if (!window.state) return;
+  const s = window.state;
+
+  const prices = s.prices || {};
+  const mas    = s.movingAverages || {};
+
+  const gushPrice = prices.GUSH || 0;
+  const dripPrice = prices.DRIP || 0;
+  const xopPrice  = prices.XOP  || 0;
+  const usoPrice  = prices.USO  || 0;
+
+  if (!gushPrice || !usoPrice || !xopPrice) {
+    addAlert("DATA UNAVAILABLE", "Prices not loaded yet, signals disabled", "HIGH");
+    return;
+  }
+
+  const usoMA9  = mas.USO?.ma9  || 0;
+  const xopMA9  = mas.XOP?.ma9  || 0;
+  const gushMA9 = mas.GUSH?.ma9 || 0;
+  const gushMA21= mas.GUSH?.ma21|| 0;
+  const dripMA9 = mas.DRIP?.ma9 || 0;
+  const dripMA21= mas.DRIP?.ma21|| 0;
+
+  const usoTrend    = usoMA9  ? (usoPrice  > usoMA9  ? "UP" : "DOWN") : null;
+  const xopTrend    = xopMA9  ? (xopPrice  > xopMA9  ? "UP" : "DOWN") : null;
+  const gushBreakout= gushMA9 ? gushPrice > gushMA9 : false;
+  const dripBreakout= dripMA9 ? dripPrice > dripMA9 : false;
+  const marketChop  = !usoTrend || !xopTrend || usoTrend !== xopTrend;
+
+  const geoRiskScore  = s.geoRisk?.score || 0;
+  const liveDataOk    = s.dataStatus === "LIVE";
+  const currentPosition = s.currentPosition || null;
+  const entryPrice      = s.entryPrice || 0;
+  const confidence      = s.signals?.confidence || 50;
+
+  alertDedup.clear();
+
+  if (usoTrend === "UP" && xopTrend === "UP") {
+    addAlert("TRENDING BULLISH", "Oil and XOP are both above short-term trend", "MEDIUM");
+  } else if (usoTrend === "DOWN" && xopTrend === "DOWN") {
+    addAlert("TRENDING BEARISH", "Oil and XOP are both below short-term trend", "MEDIUM");
+  } else {
+    addAlert("RANGE / CHOP", "Mixed or sideways conditions — avoid forcing trades", "LOW");
+  }
+
+  if (usoTrend === "UP" && xopTrend === "UP" && !gushBreakout) {
+    addAlert("GUSH WATCHLIST", "Bullish bias forming, waiting for GUSH breakout", "LOW");
+  }
+  if (usoTrend === "UP" && xopTrend === "UP" && gushBreakout) {
+    addAlert("GUSH BUY TRIGGER", "Bullish regime confirmed and GUSH broke above MA9", "HIGH");
+  }
+  if (usoTrend === "DOWN" && xopTrend === "DOWN" && !dripBreakout) {
+    addAlert("DRIP WATCHLIST", "Bearish bias forming, waiting for DRIP breakout", "LOW");
+  }
+  if (usoTrend === "DOWN" && xopTrend === "DOWN" && dripBreakout) {
+    addAlert("DRIP BUY TRIGGER", "Bearish regime confirmed and DRIP broke above MA9", "HIGH");
+  }
+
+  if (marketChop) {
+    addAlert("NO TRADE", "Signals are mixed or choppy — stand aside", "MEDIUM");
+  }
+
+  if (currentPosition === "GUSH" && entryPrice > 0) {
+    const pnl = ((gushPrice - entryPrice) / entryPrice) * 100;
+    if (pnl >= 6)  addAlert("TAKE PROFIT", "GUSH position reached +6% target zone, trim into strength", "HIGH");
+    if (gushMA21 && gushPrice < gushMA21) addAlert("CUT LOSS", "GUSH lost MA21 — bullish setup invalidated", "HIGH");
+    if (usoTrend === "DOWN" && xopTrend === "DOWN") addAlert("SWITCH GUSH TO DRIP", "Bullish position lost confirmation while bearish bias forms", "HIGH");
+  }
+  if (currentPosition === "DRIP" && entryPrice > 0) {
+    const pnl = ((dripPrice - entryPrice) / entryPrice) * 100;
+    if (pnl >= 6)  addAlert("TAKE PROFIT", "DRIP position reached +6% target zone, trim into strength", "HIGH");
+    if (dripMA21 && dripPrice < dripMA21) addAlert("CUT LOSS", "DRIP lost MA21 — bearish setup invalidated", "HIGH");
+    if (usoTrend === "UP" && xopTrend === "UP") addAlert("SWITCH DRIP TO GUSH", "Bearish position lost confirmation while bullish bias forms", "HIGH");
+  }
+
+  if (!liveDataOk) addAlert("LIVE DATA FAILED", "Quote feed missing — signals disabled until data returns", "HIGH");
+  if (geoRiskScore >= 80) addAlert("HIGH GEO RISK", "Headline risk elevated — reduce size and widen stops", "MEDIUM");
+  if (confidence < 30) addAlert("SIGNAL LOW CONFIDENCE", "Setup is weak — avoid aggressive entries", "LOW");
+}
+
+const _origCalcSignals = typeof calculateSignals === 'function' ? calculateSignals : null;
+if (_origCalcSignals) {
+  window.calculateSignals = function() {
+    _origCalcSignals();
+    runAlertLogic();
+  };
+} else {
+  const _origUpdateUI = typeof updateUI === 'function' ? updateUI : null;
+  if (_origUpdateUI) {
+    window.updateUI = function() {
+      _origUpdateUI();
+      runAlertLogic();
+    };
+  }
+}
+</script>
 </body>
 </html>
