@@ -1431,25 +1431,26 @@
 
         async function fetchSnapshot(ticker) {
             try {
-                const response = await fetch(
-                    `https://corsproxy.io/?https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`
-                );
+                const proxy = 'https://corsproxy.io/?url=';
+                const url = proxy + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=1d&range=1d');
+                const response = await fetch(url);
                 if (!response.ok) return null;
                 const data = await response.json();
-                const meta = data?.chart?.result?.[0]?.meta;
-                if (!meta) return null;
-                const price = meta.regularMarketPrice || meta.chartPreviousClose || 0;
-                const prevClose = meta.chartPreviousClose || meta.previousClose || price;
+                const result = data.chart?.result?.[0];
+                if (!result) return null;
+                const meta = result.meta;
+                const prevClose = meta.previousClose || meta.chartPreviousClose;
                 return {
-                    c: price,
-                    o: prevClose,
-                    h: meta.regularMarketDayHigh || price,
-                    l: meta.regularMarketDayLow || price,
-                    v: meta.regularMarketVolume || 0,
-                    vw: price
+                    lastTrade: { p: meta.regularMarketPrice },
+                    prevClose: prevClose,
+                    day: {
+                        h: meta.regularMarketDayHigh || meta.regularMarketPrice,
+                        l: meta.regularMarketDayLow || meta.regularMarketPrice,
+                        v: meta.regularMarketVolume || 0
+                    }
                 };
             } catch (error) {
-                console.error(`Error fetching snapshot for ${ticker}:`, error);
+                console.error('Error fetching snapshot for ' + ticker + ':', error);
                 return null;
             }
         }        async function initializeData() {
@@ -1531,18 +1532,17 @@
             let successCount = 0;
             for (let i = 0; i < TICKERS.length; i++) {
                 const ticker = TICKERS[i];
-                await new Promise(resolve => setTimeout(resolve, i * 250));
+                await new Promise(resolve => setTimeout(resolve, i * 300));
 
                 const snapshot = await fetchSnapshot(ticker);
-                if (snapshot && snapshot.lastTrade) {
+                if (snapshot && snapshot.lastTrade && snapshot.lastTrade.p) {
                     const currentPrice = snapshot.lastTrade.p;
-                    const prevClose = previousCloseRef[ticker];
-
                     state.prices[ticker] = currentPrice;
 
+                    const prevClose = snapshot.prevClose || (previousCloseRef[ticker] && previousCloseRef[ticker].c);
                     if (prevClose) {
-                        const dollarChange = currentPrice - prevClose.c;
-                        const percentChange = (dollarChange / prevClose.c) * 100;
+                        const dollarChange = currentPrice - prevClose;
+                        const percentChange = (dollarChange / prevClose) * 100;
                         state.changes[ticker] = {
                             dollar: parseFloat(dollarChange.toFixed(2)),
                             percent: parseFloat(percentChange.toFixed(2))
@@ -1556,13 +1556,12 @@
                         };
                         state.volumes[ticker] = snapshot.day.v || 0;
                     }
-
                     successCount++;
                 }
             }
 
             state.lastUpdateTime = new Date().toLocaleTimeString();
-            state.dataStatus = successCount === TICKERS.length ? "LIVE" : "STALE";
+            state.dataStatus = successCount > 0 ? "LIVE" : "STALE";
             updateUI();
             updateChart();
             calculateSignals();
