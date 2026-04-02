@@ -2165,28 +2165,29 @@ function renderAlerts() {
 }
 
 function runAlertLogic() {
-  if (!window.state) return;
-  const s = window.state;
+  // Read prices and MAs directly from DOM elements
+  function domNum(id) {
+    const el = document.getElementById(id);
+    if (!el) return 0;
+    return parseFloat(el.textContent.replace(/[^0-9.-]/g, '')) || 0;
+  }
 
-  const prices = s.prices || {};
-  const mas    = s.movingAverages || {};
-
-  const gushPrice = prices.GUSH || 0;
-  const dripPrice = prices.DRIP || 0;
-  const xopPrice  = prices.XOP  || 0;
-  const usoPrice  = prices.USO  || 0;
+  const gushPrice = domNum('price-GUSH');
+  const dripPrice = domNum('price-DRIP');
+  const xopPrice  = domNum('price-XOP');
+  const usoPrice  = domNum('price-USO');
 
   if (!gushPrice || !usoPrice || !xopPrice) {
     addAlert("DATA UNAVAILABLE", "Prices not loaded yet, signals disabled", "HIGH");
     return;
   }
 
-  const usoMA9  = mas.USO?.ma9  || 0;
-  const xopMA9  = mas.XOP?.ma9  || 0;
-  const gushMA9 = mas.GUSH?.ma9 || 0;
-  const gushMA21= mas.GUSH?.ma21|| 0;
-  const dripMA9 = mas.DRIP?.ma9 || 0;
-  const dripMA21= mas.DRIP?.ma21|| 0;
+  const usoMA9   = domNum('ma-uso-9');
+  const xopMA9   = domNum('ma-xop-9');
+  const gushMA9  = domNum('ma-gush-9');
+  const gushMA21 = domNum('ma-gush-21');
+  const dripMA9  = domNum('ma-drip-9');
+  const dripMA21 = domNum('ma-drip-21');
 
   const usoTrend    = usoMA9  ? (usoPrice  > usoMA9  ? "UP" : "DOWN") : null;
   const xopTrend    = xopMA9  ? (xopPrice  > xopMA9  ? "UP" : "DOWN") : null;
@@ -2194,14 +2195,18 @@ function runAlertLogic() {
   const dripBreakout= dripMA9 ? dripPrice > dripMA9 : false;
   const marketChop  = !usoTrend || !xopTrend || usoTrend !== xopTrend;
 
-  const geoRiskScore  = s.geoRisk?.score || 0;
-  const liveDataOk    = s.dataStatus === "LIVE";
-  const currentPosition = s.currentPosition || null;
-  const entryPrice      = s.entryPrice || 0;
-  const confidence      = s.signals?.confidence || 50;
+  // Confidence from aiConfValue (e.g. "18%")
+  const confEl = document.getElementById('aiConfValue');
+  const confidence = confEl ? (parseFloat(confEl.textContent) || 50) : 50;
 
+  // Geo risk — sum up individual geo scores if overall not found
+  const geoOverall = domNum('geoOverallScore') || domNum('geoRiskScore') || domNum('geoScore');
+  const geoRiskScore = geoOverall;
+
+  // Clear dedup so logic re-evaluates on each cycle
   alertDedup.clear();
 
+  // 1. Market Regime
   if (usoTrend === "UP" && xopTrend === "UP") {
     addAlert("TRENDING BULLISH", "Oil and XOP are both above short-term trend", "MEDIUM");
   } else if (usoTrend === "DOWN" && xopTrend === "DOWN") {
@@ -2210,6 +2215,7 @@ function runAlertLogic() {
     addAlert("RANGE / CHOP", "Mixed or sideways conditions — avoid forcing trades", "LOW");
   }
 
+  // 2. Trade Setups
   if (usoTrend === "UP" && xopTrend === "UP" && !gushBreakout) {
     addAlert("GUSH WATCHLIST", "Bullish bias forming, waiting for GUSH breakout", "LOW");
   }
@@ -2223,24 +2229,12 @@ function runAlertLogic() {
     addAlert("DRIP BUY TRIGGER", "Bearish regime confirmed and DRIP broke above MA9", "HIGH");
   }
 
+  // 3. No-trade protection
   if (marketChop) {
     addAlert("NO TRADE", "Signals are mixed or choppy — stand aside", "MEDIUM");
   }
 
-  if (currentPosition === "GUSH" && entryPrice > 0) {
-    const pnl = ((gushPrice - entryPrice) / entryPrice) * 100;
-    if (pnl >= 6)  addAlert("TAKE PROFIT", "GUSH position reached +6% target zone, trim into strength", "HIGH");
-    if (gushMA21 && gushPrice < gushMA21) addAlert("CUT LOSS", "GUSH lost MA21 — bullish setup invalidated", "HIGH");
-    if (usoTrend === "DOWN" && xopTrend === "DOWN") addAlert("SWITCH GUSH TO DRIP", "Bullish position lost confirmation while bearish bias forms", "HIGH");
-  }
-  if (currentPosition === "DRIP" && entryPrice > 0) {
-    const pnl = ((dripPrice - entryPrice) / entryPrice) * 100;
-    if (pnl >= 6)  addAlert("TAKE PROFIT", "DRIP position reached +6% target zone, trim into strength", "HIGH");
-    if (dripMA21 && dripPrice < dripMA21) addAlert("CUT LOSS", "DRIP lost MA21 — bearish setup invalidated", "HIGH");
-    if (usoTrend === "UP" && xopTrend === "UP") addAlert("SWITCH DRIP TO GUSH", "Bearish position lost confirmation while bullish bias forms", "HIGH");
-  }
-
-  if (!liveDataOk) addAlert("LIVE DATA FAILED", "Quote feed missing — signals disabled until data returns", "HIGH");
+  // 4. Risk / confidence
   if (geoRiskScore >= 80) addAlert("HIGH GEO RISK", "Headline risk elevated — reduce size and widen stops", "MEDIUM");
   if (confidence < 30) addAlert("SIGNAL LOW CONFIDENCE", "Setup is weak — avoid aggressive entries", "LOW");
 }
