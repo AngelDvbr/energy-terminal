@@ -1533,6 +1533,7 @@
                 const proxy = 'https://corsproxy.io/?url=';
                 const url = proxy + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=1d&range=1d');
                 const response = await fetch(url);
+                console.log('[fetch]', ticker, response.ok ? 'OK' : 'FAIL', response.status);
                 if (!response.ok) return null;
                 const data = await response.json();
                 const result = data.chart?.result?.[0];
@@ -1549,10 +1550,19 @@
                     }
                 };
             } catch (error) {
-                console.error('Error fetching snapshot for ' + ticker + ':', error);
+                console.error('[fetch] FAIL', ticker, error.message);
                 return null;
             }
-        }        async function initializeData() {
+        }
+
+        function dataIsReady() {
+            return ['GUSH','DRIP','XOP','USO'].some(t => (state.prices[t] || 0) > 0);
+        }
+
+        async function initializeData() {
+            state.dataStatus = 'LOADING';
+            updateUI();
+            console.log('[init] Starting data initialization...');
             state.dataStatus = "LOADING...";
             updateStatus();
 
@@ -1630,7 +1640,7 @@
         }
 
         async function updateSnapshots() {
-            if (state.dataStatus !== "LIVE" && state.dataStatus !== "STALE") return;
+            if (!['LIVE','STALE','LOADING'].includes(state.dataStatus)) return;
 
             let successCount = 0;
             for (let i = 0; i < TICKERS.length; i++) {
@@ -1671,6 +1681,7 @@
         }
 
         function calculateSignals() {
+            if (!dataIsReady()) { console.warn('[signals] Skipping — no valid data yet'); return; }
             const indicators = state.technicalIndicators;
             const geoRiskScore = state.geoRisk;
 
@@ -1772,7 +1783,7 @@
                 const highLow = state.dayHighLow[ticker];
                 const volume = state.volumes[ticker];
 
-                document.getElementById(`price-${ticker}`).textContent = price ? price.toFixed(2) : '—';
+                document.getElementById(`price-${ticker}`).textContent = price ? price.toFixed(2) : (state.dataStatus === 'LOADING' ? '...' : '—');
                 const changeEl = document.getElementById(`change-${ticker}`);
                 const changeClass = (change?.dollar || 0) >= 0 ? 'price-up' : 'price-down';
                 changeEl.textContent = (change.dollar >= 0 ? '+' : '') + change?.dollar ? change.dollar.toFixed(2) : '—' + ' (' + change?.percent ? change.percent.toFixed(2) : '—' + '%)';
@@ -1962,6 +1973,7 @@
     </script>
     <script>
 function updateAISignalPanel(d) {
+  if (!dataIsReady()) return;
   const usoAboveMA9  = d.usoPrice > d.usoMA9;
   const usoAboveMA21 = d.usoPrice > (d.usoMA21 || d.usoMA9 * 0.98);
   const xopAboveMA9  = d.xopPrice > d.xopMA9;
@@ -2165,6 +2177,7 @@ function renderAlerts() {
 }
 
 function runAlertLogic() {
+  if (!dataIsReady()) { addAlert("DATA UNAVAILABLE", "Prices not loaded yet — signals disabled", "HIGH"); return; }
   // Read prices and MAs directly from DOM elements
   function domNum(id) {
     const el = document.getElementById(id);
