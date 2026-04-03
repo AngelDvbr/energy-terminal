@@ -816,6 +816,22 @@
 .alert-priority.MEDIUM { color: #e3b341; }
 .alert-priority.LOW    { color: #484f58; }
 .alert-time { font-size: 10px; color: #484f58; }
+
+/* ── Safety State Styles ── */
+.data-unavailable { color: #484f58 !important; }
+.signal-blocked { opacity: 0.4; pointer-events: none; }
+.loading-shimmer {
+    background: linear-gradient(90deg, #161b22 25%, #21262d 50%, #161b22 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    color: transparent !important;
+    user-select: none;
+}
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
     </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -1528,29 +1544,63 @@
             }
         }
 
-        async function fetchSnapshot(ticker) {
+        // ── Data Safety Helpers ────────────────────────────────────────
+        function isValidNumber(val) {
+            return typeof val === 'number' && isFinite(val) && val > 0;
+        }
+
+        function safeSetText(elementId, value, opts) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            opts = opts || {};
+            if (!isValidNumber(value)) {
+                el.textContent = opts.fallback || '—';
+                el.classList.add('data-unavailable');
+                return;
+            }
+            el.classList.remove('data-unavailable');
+            const decimals = opts.decimals !== undefined ? opts.decimals : 2;
+            el.textContent = (opts.prefix || '') + value.toFixed(decimals) + (opts.suffix || '');
+        }
+
+        let liveDataOk = false;
+
+        function setLiveDataOk(ok) {
+            liveDataOk = ok;
+            const signalEls = document.querySelectorAll('.signal-action, #aiSignalBadge, #aiRegimeBadge');
+            signalEls.forEach(el => {
+                if (!ok) { el.classList.add('signal-blocked'); }
+                else { el.classList.remove('signal-blocked'); }
+            });
+        }
+
+                async function fetchSnapshot(ticker) {
+            console.log('[fetch:start]', ticker);
             try {
                 const proxy = 'https://corsproxy.io/?url=';
                 const url = proxy + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=1d&range=1d');
                 const response = await fetch(url);
-                console.log('[fetch]', ticker, response.ok ? 'OK' : 'FAIL', response.status);
+                console.log('[fetch:response]', ticker, response.status, response.ok ? 'OK' : 'FAIL');
                 if (!response.ok) return null;
                 const data = await response.json();
                 const result = data.chart?.result?.[0];
-                if (!result) return null;
+                if (!result) { console.error('[fetch:no-result]', ticker); return null; }
                 const meta = result.meta;
+                const price = meta.regularMarketPrice;
                 const prevClose = meta.previousClose || meta.chartPreviousClose;
+                console.log('[fetch:parsed]', ticker, 'price:', price, 'prev:', prevClose);
+                if (!isValidNumber(price)) { console.warn('[fetch:invalid]', ticker, price); return null; }
                 return {
-                    lastTrade: { p: meta.regularMarketPrice },
+                    lastTrade: { p: price },
                     prevClose: prevClose,
                     day: {
-                        h: meta.regularMarketDayHigh || meta.regularMarketPrice,
-                        l: meta.regularMarketDayLow || meta.regularMarketPrice,
-                        v: meta.regularMarketVolume || 0
+                        h: meta.regularMarketDayHigh || price,
+                        l: meta.regularMarketDayLow  || price,
+                        v: meta.regularMarketVolume  || 0
                     }
                 };
             } catch (error) {
-                console.error('[fetch] FAIL', ticker, error.message);
+                console.error('[fetch:exception]', ticker, error.message);
                 return null;
             }
         }
@@ -1561,6 +1611,12 @@
 
         async function initializeData() {
             state.dataStatus = 'LOADING';
+            setLiveDataOk(false);
+            ['GUSH','DRIP','XOP','USO'].forEach(t => {
+                const el = document.getElementById('price-' + t);
+                if (el) { el.textContent = '···'; el.classList.add('loading-shimmer'); }
+            });
+            console.log('[init:start]');
             updateUI();
             console.log('[init] Starting data initialization...');
             state.dataStatus = "LOADING...";
@@ -1628,6 +1684,12 @@
                     }
                 }
                 const validPriceCount = TICKERS.filter(t => state.prices[t] && state.prices[t] > 0).length;
+                ['GUSH','DRIP','XOP','USO'].forEach(t => {
+                    const el = document.getElementById('price-' + t);
+                    if (el) el.classList.remove('loading-shimmer');
+                });
+                setLiveDataOk(validPriceCount >= 2);
+                console.log('[init:complete] validPrices:', validPriceCount);
                 state.dataStatus = validPriceCount >= 2 ? "LIVE" : "ERROR";
                 updateStatus();
                 updateUI();
@@ -1682,6 +1744,8 @@
 
         function calculateSignals() {
             if (!dataIsReady()) { console.warn('[signals] Skipping — no valid data yet'); return; }
+            if (!liveDataOk) { console.warn('[signals:blocked] liveDataOk false'); return; }
+            console.log('[signals:start]');
             const indicators = state.technicalIndicators;
             const geoRiskScore = state.geoRisk;
 
@@ -1777,6 +1841,7 @@
         }
 
         function updateUI() {
+            console.log('[render:updateUI] status:', state.dataStatus, 'liveDataOk:', liveDataOk);
             for (const ticker of TICKERS) {
                 const price = state.prices[ticker];
                 const change = state.changes[ticker];
