@@ -1317,9 +1317,14 @@
             </div>
         </div>
 
+        <div class="tf-toggle-group" id="tfToggle">
+          <button class="tf-btn active" data-tf="1D">1D</button>
+          <button class="tf-btn" data-tf="5D">5D</button>
+          <button class="tf-btn" data-tf="30D">30D</button>
+        </div>
         <!-- Price Chart -->
         <div class="chart-container">
-            <div class="chart-title">PRICE CHART - 30D LIVE DATA</div>
+            <div class="chart-title" id="chartTitle">PRICE CHART - 1D INTRADAY</div>
             <canvas id="priceChart" class="chart-canvas"></canvas>
         </div>
 
@@ -2879,5 +2884,129 @@ section, .section, .panel-section {
   #aiSignalBadge, .ss-badge { font-size: 12px !important; padding: 6px 14px !important; }
 }
 </style>
+
+<!-- ── Multi-Timeframe Toggle ─────────────────────────────── -->
+<style id="tf-style">
+.tf-toggle-group {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.tf-btn {
+  background: #0a0a0a;
+  color: #666666;
+  border: 1px solid #333333;
+  border-radius: 4px;
+  padding: 4px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  transition: color 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.tf-btn:hover {
+  background: #111111;
+  color: #cccccc;
+  border-color: #FF9900;
+}
+.tf-btn.active {
+  background: #1a1200;
+  color: #FF9900;
+  border-color: #FF9900;
+  box-shadow: 0 0 8px rgba(255,153,0,0.25);
+}
+@media (max-width: 768px) {
+  .tf-toggle-group { gap: 4px; }
+  .tf-btn { padding: 4px 10px; font-size: 10px; }
+}
+</style>
+
+<script>
+(function() {
+  const TF_CONFIG = {
+    '1D':  { interval: '5m',  range: '1d',  label: 'PRICE CHART - 1D INTRADAY'  },
+    '5D':  { interval: '15m', range: '5d',  label: 'PRICE CHART - 5D'           },
+    '30D': { interval: '1d',  range: '30d', label: 'PRICE CHART - 30D TREND'    }
+  };
+  const PROXY = 'https://corsproxy.io/?url=';
+  const TICKERS_TF = ['GUSH', 'DRIP', 'XOP', 'USO'];
+  window.currentTF = '1D';
+
+  async function fetchTFData(ticker, tf) {
+    const cfg = TF_CONFIG[tf];
+    const url = PROXY + encodeURIComponent(
+      'https://query1.finance.yahoo.com/v8/finance/chart/' + ticker +
+      '?interval=' + cfg.interval + '&range=' + cfg.range
+    );
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const json = await res.json();
+      const result = json.chart?.result?.[0];
+      if (!result) return null;
+      const timestamps = result.timestamp || [];
+      const closes    = result.indicators?.quote?.[0]?.close || [];
+      const pairs = timestamps
+        .map((ts, i) => ({ ts, v: closes[i] }))
+        .filter(p => p.v != null && isFinite(p.v) && p.v > 0);
+      const labels = pairs.map(p => {
+        const d = new Date(p.ts * 1000);
+        if (tf === '1D') return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        if (tf === '5D') return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
+                                d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      });
+      return { labels, prices: pairs.map(p => p.v) };
+    } catch(e) {
+      console.error('[tf-fetch]', ticker, tf, e.message);
+      return null;
+    }
+  }
+
+  async function refreshChartForTF(tf) {
+    const results = await Promise.all(TICKERS_TF.map(t => fetchTFData(t, tf)));
+    let labels = [];
+    results.forEach(r => { if (r && r.labels.length > labels.length) labels = r.labels; });
+    if (typeof chartInstance === 'undefined' || !chartInstance) {
+      console.warn('[tf] chartInstance not ready yet');
+      return;
+    }
+    chartInstance.data.labels = labels;
+    TICKERS_TF.forEach((ticker, idx) => {
+      const data = results[idx];
+      chartInstance.data.datasets[idx].data = data ? data.prices : [];
+    });
+    chartInstance.update('none');
+    const titleEl = document.getElementById('chartTitle');
+    if (titleEl) titleEl.textContent = TF_CONFIG[tf].label;
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const group = document.getElementById('tfToggle');
+    if (!group) return;
+    group.addEventListener('click', function(e) {
+      const btn = e.target.closest('.tf-btn');
+      if (!btn) return;
+      const tf = btn.dataset.tf;
+      if (tf === window.currentTF) return;
+      window.currentTF = tf;
+      group.querySelectorAll('.tf-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.tf === tf)
+      );
+      refreshChartForTF(tf);
+    });
+    function waitForChart(attempts) {
+      if (typeof chartInstance !== 'undefined' && chartInstance) {
+        refreshChartForTF('1D');
+      } else if (attempts < 30) {
+        setTimeout(function() { waitForChart(attempts + 1); }, 500);
+      }
+    }
+    setTimeout(function() { waitForChart(0); }, 2000);
+  });
+})();
+</script>
+<!-- ── End Multi-Timeframe Toggle ────────────────────────── -->
 </body>
 </html>
