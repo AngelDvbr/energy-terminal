@@ -2513,6 +2513,7 @@ if (_origCalcSignals) {
   window.calculateSignals = function() {
     _origCalcSignals();
     runAlertLogic();
+    updateSignalChecklist();
   };
 } else {
   const _origUpdateUI = typeof updateUI === 'function' ? updateUI : null;
