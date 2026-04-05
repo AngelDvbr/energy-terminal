@@ -2525,5 +2525,359 @@ if (_origCalcSignals) {
   }
 }
 </script>
+<style id="polish-v2">
+/* ═══════════════════════════════════════════════
+   ENERGY TERMINAL — VISUAL POLISH v2
+   Override layer — do not remove existing styles
+═══════════════════════════════════════════════ */
+
+/* Base & Typography */
+body {
+  background: #060a0f !important;
+  font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  color: #c9d1d9 !important;
+  letter-spacing: 0.01em;
+}
+
+/* ── Layout container ── */
+.container, .dashboard-container, .main-container, [class*="container"] {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ── Section spacing ── */
+section, .section, .panel-section {
+  margin-bottom: 20px !important;
+}
+
+/* ══════════════════════════════
+   PRICE CARDS — Hero numbers
+══════════════════════════════ */
+.price-card, .quote-card, [class*="price-card"], [class*="quote-card"] {
+  background: linear-gradient(145deg, #0d1117, #111820) !important;
+  border: 1px solid #1c2333 !important;
+  border-radius: 12px !important;
+  padding: 18px 16px !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+  position: relative;
+  overflow: hidden;
+}
+.price-card::before, .quote-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(88,166,255,0.15), transparent);
+}
+.price-card:hover, .quote-card:hover {
+  border-color: #2d3748 !important;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.5) !important;
+}
+
+/* Price number — make it big and bold */
+.price-value, .ticker-price, [id^="price-"], .price {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.5px !important;
+  color: #e6edf3 !important;
+  font-variant-numeric: tabular-nums !important;
+  line-height: 1.1 !important;
+}
+
+/* Ticker label */
+.ticker-label, .ticker-name, .card-ticker {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  color: #8b949e !important;
+  text-transform: uppercase !important;
+  margin-bottom: 6px !important;
+}
+
+/* Change values */
+.change-positive, [class*="positive"], .up { color: #3fb950 !important; }
+.change-negative, [class*="negative"], .down { color: #f85149 !important; }
+
+/* ══════════════════════════════
+   AI SIGNAL PANEL — Hero Section
+══════════════════════════════ */
+.energy-ai-panel, #aiSignalPanel, [class*="ai-panel"], [class*="signal-panel"] {
+  background: linear-gradient(160deg, #0d1117 0%, #0a1628 50%, #0d1117 100%) !important;
+  border: 1px solid rgba(88,166,255,0.2) !important;
+  border-radius: 16px !important;
+  padding: 28px 24px !important;
+  box-shadow:
+    0 0 0 1px rgba(88,166,255,0.05),
+    0 8px 40px rgba(0,0,0,0.5),
+    0 0 60px rgba(88,166,255,0.04) !important;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px !important;
+}
+.energy-ai-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(88,166,255,0.4), rgba(139,92,246,0.3), transparent);
+}
+
+/* Regime badge — larger and more dramatic */
+#aiRegimeBadge, .regime-badge, [id*="regime"] {
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  letter-spacing: 2px !important;
+  padding: 6px 16px !important;
+  border-radius: 6px !important;
+}
+
+/* Signal badge — the hero element */
+#aiSignalBadge, .signal-badge, [id*="signal-badge"], .ss-badge {
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  letter-spacing: 2.5px !important;
+  padding: 8px 20px !important;
+  border-radius: 8px !important;
+}
+
+/* Badge colors — unified system */
+.badge-bullish, [class*="badge-bullish"], .rg-badge.badge-bullish {
+  background: rgba(35,134,54,0.2) !important;
+  color: #3fb950 !important;
+  border: 1px solid rgba(35,134,54,0.4) !important;
+  box-shadow: 0 0 16px rgba(35,134,54,0.15) !important;
+}
+.badge-bearish, [class*="badge-bearish"] {
+  background: rgba(218,54,51,0.2) !important;
+  color: #f85149 !important;
+  border: 1px solid rgba(218,54,51,0.4) !important;
+  box-shadow: 0 0 16px rgba(218,54,51,0.12) !important;
+}
+.badge-neutral, [class*="badge-neutral"] {
+  background: rgba(139,148,158,0.1) !important;
+  color: #8b949e !important;
+  border: 1px solid rgba(139,148,158,0.2) !important;
+}
+.badge-watchlist {
+  background: rgba(187,128,9,0.18) !important;
+  color: #e3b341 !important;
+  border: 1px solid rgba(187,128,9,0.35) !important;
+  box-shadow: 0 0 12px rgba(187,128,9,0.1) !important;
+}
+
+/* AI panel section labels */
+.energy-ai-panel .section-label, .energy-ai-panel label,
+.energy-grid .panel-label, .ai-label {
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+  color: #484f58 !important;
+  margin-bottom: 6px !important;
+}
+
+/* ══════════════════════════════
+   SIGNAL CHECKLIST — TradingView Style
+══════════════════════════════ */
+.checklist-card {
+  background: linear-gradient(160deg, #0d1117, #0c1420) !important;
+  border: 1px solid #1c2333 !important;
+  border-radius: 14px !important;
+  padding: 20px !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.35) !important;
+}
+.checklist-header {
+  padding-bottom: 14px !important;
+  margin-bottom: 14px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+}
+.checklist-title {
+  font-size: 10px !important;
+  letter-spacing: 2.5px !important;
+  color: #58a6ff !important;
+}
+.checklist-row {
+  padding: 10px 12px !important;
+  border-radius: 8px !important;
+  background: rgba(22,27,34,0.8) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+  border-left-width: 3px !important;
+  margin-bottom: 4px !important;
+  transition: background 0.2s !important;
+}
+.checklist-row:hover { background: rgba(30,38,50,0.9) !important; }
+.checklist-row.pass { border-left-color: #238636 !important; background: rgba(35,134,54,0.06) !important; }
+.checklist-row.fail { border-left-color: #da3633 !important; background: rgba(218,54,51,0.06) !important; }
+.check-icon { font-size: 14px !important; }
+.check-label { font-size: 12px !important; font-weight: 600 !important; color: #e6edf3 !important; }
+.check-detail { font-size: 10px !important; color: #6e7681 !important; margin-top: 1px !important; }
+.check-status.pass { color: #3fb950 !important; font-size: 9px !important; letter-spacing: 1px !important; }
+.check-status.fail { color: #f85149 !important; font-size: 9px !important; letter-spacing: 1px !important; }
+.checklist-footer {
+  margin-top: 14px !important;
+  padding-top: 12px !important;
+  border-top: 1px solid rgba(255,255,255,0.05) !important;
+}
+.checklist-score { font-size: 13px !important; font-weight: 700 !important; color: #8b949e !important; }
+.checklist-signal {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 2.5px !important;
+  padding: 4px 14px !important;
+  border-radius: 6px !important;
+}
+.checklist-signal.buy {
+  background: rgba(35,134,54,0.2) !important;
+  color: #3fb950 !important;
+  border-color: #238636 !important;
+  box-shadow: 0 0 12px rgba(35,134,54,0.2) !important;
+}
+.checklist-signal.watch {
+  background: rgba(187,128,9,0.18) !important;
+  color: #e3b341 !important;
+  border-color: rgba(187,128,9,0.4) !important;
+}
+
+/* ══════════════════════════════
+   ALERTS PANEL
+══════════════════════════════ */
+.alerts-panel {
+  background: #0d1117 !important;
+  border: 1px solid #1c2333 !important;
+  border-radius: 14px !important;
+  padding: 18px !important;
+}
+.alerts-title { color: #58a6ff !important; letter-spacing: 2px !important; }
+.alert-row {
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  background: rgba(22,27,34,0.9) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+}
+.alert-row.bullish { border-left: 3px solid #238636 !important; background: rgba(35,134,54,0.05) !important; }
+.alert-row.bearish { border-left: 3px solid #da3633 !important; background: rgba(218,54,51,0.05) !important; }
+.alert-row.watchlist { border-left: 3px solid #9e6a03 !important; background: rgba(187,128,9,0.05) !important; }
+.alert-row.georisk { border-left: 3px solid #8957e5 !important; background: rgba(139,92,246,0.05) !important; }
+.alert-headline { font-size: 11px !important; font-weight: 700 !important; }
+.alert-desc { font-size: 10px !important; color: #6e7681 !important; }
+
+/* ══════════════════════════════
+   SECTION HEADERS & PANEL TITLES
+══════════════════════════════ */
+.panel-title, .section-title, .section-header,
+[class*="panel-title"], [class*="section-title"] {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 2.5px !important;
+  text-transform: uppercase !important;
+  color: #58a6ff !important;
+  margin-bottom: 16px !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid rgba(88,166,255,0.1) !important;
+}
+
+/* ══════════════════════════════
+   STATUS BADGE
+══════════════════════════════ */
+.status-badge, .data-status, #statusBadge, [class*="status-live"] {
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  letter-spacing: 2px !important;
+  padding: 3px 10px !important;
+  border-radius: 20px !important;
+}
+.status-live {
+  background: rgba(35,134,54,0.15) !important;
+  color: #3fb950 !important;
+  border: 1px solid rgba(35,134,54,0.3) !important;
+  box-shadow: 0 0 8px rgba(35,134,54,0.2) !important;
+}
+.status-error {
+  background: rgba(218,54,51,0.15) !important;
+  color: #f85149 !important;
+  border: 1px solid rgba(218,54,51,0.3) !important;
+}
+
+/* ══════════════════════════════
+   TECHNICAL INDICATORS GRID
+══════════════════════════════ */
+.tech-grid, .indicators-grid, [class*="tech-grid"] {
+  gap: 10px !important;
+}
+.tech-card, .indicator-card, [class*="tech-card"], [class*="indicator"] {
+  background: linear-gradient(145deg, #0d1117, #111820) !important;
+  border: 1px solid #1c2333 !important;
+  border-radius: 10px !important;
+  padding: 14px !important;
+}
+.tech-label, .indicator-label { font-size: 9px !important; letter-spacing: 1.5px !important; color: #484f58 !important; }
+.tech-value, .indicator-value { font-size: 18px !important; font-weight: 700 !important; color: #e6edf3 !important; }
+
+/* ══════════════════════════════
+   BUTTONS
+══════════════════════════════ */
+.button, button.btn, .btn {
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.8px !important;
+  font-size: 11px !important;
+  transition: all 0.2s !important;
+}
+
+/* ══════════════════════════════
+   PORTFOLIO TABLE
+══════════════════════════════ */
+.portfolio-table th {
+  font-size: 9px !important;
+  letter-spacing: 1.5px !important;
+  color: #484f58 !important;
+  text-transform: uppercase !important;
+  padding: 10px 12px !important;
+  border-bottom: 1px solid #1c2333 !important;
+}
+.portfolio-table td {
+  padding: 10px 12px !important;
+  font-size: 12px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.03) !important;
+}
+
+/* ══════════════════════════════
+   GENERAL CARD UPGRADE
+══════════════════════════════ */
+.panel-card, .card, [class*="panel-card"] {
+  background: linear-gradient(145deg, #0d1117, #111820) !important;
+  border: 1px solid #1c2333 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+}
+
+/* ══════════════════════════════
+   SCROLLBAR
+══════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0d1117; }
+::-webkit-scrollbar-thumb { background: #21262d; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #30363d; }
+
+/* ══════════════════════════════
+   PULSING ANIMATION — refined
+══════════════════════════════ */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(35,134,54,0); }
+  50% { box-shadow: 0 0 0 4px rgba(35,134,54,0.15); }
+}
+.pulsing { animation: pulse-glow 2s infinite !important; }
+
+/* ══════════════════════════════
+   MOBILE
+══════════════════════════════ */
+@media (max-width: 768px) {
+  .price-value, .ticker-price { font-size: 22px !important; }
+  .energy-ai-panel { padding: 18px 14px !important; }
+  #aiSignalBadge, .ss-badge { font-size: 12px !important; padding: 6px 14px !important; }
+}
+</style>
 </body>
 </html>
