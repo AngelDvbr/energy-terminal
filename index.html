@@ -835,6 +835,81 @@
 .status-live  { background: rgba(35,134,54,0.2); color: #3fb950; border-color: #238636; }
 .status-error { background: rgba(248,81,73,0.2);  color: #f85149; border-color: #da3633; }
 .status-loading { background: rgba(139,148,158,0.1); color: #8b949e; border-color: #30363d; }
+/* ── Signal Checklist Card ── */
+.checklist-card {
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 16px 0;
+}
+.checklist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #21262d;
+}
+.checklist-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #8b949e;
+  text-transform: uppercase;
+}
+.checklist-score-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(139,148,158,0.1);
+  color: #8b949e;
+  border: 1px solid #30363d;
+  text-transform: uppercase;
+}
+.checklist-score-badge.buy     { background: rgba(35,134,54,0.2);  color: #3fb950; border-color: #238636; }
+.checklist-score-badge.watch   { background: rgba(210,153,34,0.15); color: #e3b341; border-color: #9e6a03; }
+.checklist-score-badge.notrade { background: rgba(139,148,158,0.1); color: #8b949e; border-color: #30363d; }
+.checklist-rows { display: flex; flex-direction: column; gap: 2px; }
+.checklist-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  background: #161b22;
+  border-left: 3px solid #21262d;
+  transition: border-color 0.3s;
+}
+.checklist-row.pass { border-left-color: #238636; }
+.checklist-row.warn { border-left-color: #9e6a03; }
+.checklist-row.fail { border-left-color: #da3633; }
+.check-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; line-height: 1; }
+.check-icon.pass { color: #3fb950; }
+.check-icon.warn { color: #e3b341; }
+.check-icon.fail { color: #f85149; }
+.check-icon.wait { color: #484f58; }
+.check-body { flex: 1; min-width: 0; }
+.check-label { display: block; font-size: 12px; font-weight: 600; color: #e6edf3; margin-bottom: 1px; }
+.check-detail { display: block; font-size: 10px; color: #8b949e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.check-status { font-size: 9px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; flex-shrink: 0; }
+.check-status.pass { color: #3fb950; }
+.check-status.warn { color: #e3b341; }
+.check-status.fail { color: #f85149; }
+.checklist-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 10px; border-top: 1px solid #21262d; }
+.checklist-score { font-size: 12px; font-weight: 700; color: #8b949e; letter-spacing: 0.5px; }
+.checklist-signal { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; padding: 3px 10px; border-radius: 5px; background: rgba(139,148,158,0.1); color: #8b949e; border: 1px solid #30363d; }
+.checklist-signal.buy     { background: rgba(35,134,54,0.2);  color: #3fb950; border-color: #238636; }
+.checklist-signal.watch   { background: rgba(210,153,34,0.15); color: #e3b341; border-color: #9e6a03; }
+.checklist-signal.notrade { background: rgba(139,148,158,0.1); color: #8b949e; border-color: #30363d; }
+@media (max-width: 600px) {
+  .check-label { font-size: 11px; }
+  .check-detail { font-size: 9px; }
+  .checklist-signal { font-size: 10px; letter-spacing: 1px; }
+}
+
     </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -1047,6 +1122,52 @@
           </div>
           <div class="alerts-feed" id="alertsFeed">
             <div class="alerts-empty">No alerts yet — waiting for data...</div>
+          </div>
+        </div>
+
+        <!-- Signal Checklist Card -->
+        <div class="checklist-card" id="signalChecklist">
+          <div class="checklist-header">
+            <span class="checklist-title">SIGNAL CHECKLIST</span>
+            <span class="checklist-score-badge" id="checklistBadge">—</span>
+          </div>
+          <div class="checklist-rows">
+            <div class="checklist-row" id="check-oil">
+              <span class="check-icon" id="check-oil-icon">○</span>
+              <div class="check-body">
+                <span class="check-label">Oil Direction</span>
+                <span class="check-detail" id="check-oil-detail">Waiting for data...</span>
+              </div>
+              <span class="check-status" id="check-oil-status"></span>
+            </div>
+            <div class="checklist-row" id="check-xop">
+              <span class="check-icon" id="check-xop-icon">○</span>
+              <div class="check-body">
+                <span class="check-label">XOP Confirmation</span>
+                <span class="check-detail" id="check-xop-detail">Waiting for data...</span>
+              </div>
+              <span class="check-status" id="check-xop-status"></span>
+            </div>
+            <div class="checklist-row" id="check-etf">
+              <span class="check-icon" id="check-etf-icon">○</span>
+              <div class="check-body">
+                <span class="check-label">ETF Trigger</span>
+                <span class="check-detail" id="check-etf-detail">Waiting for data...</span>
+              </div>
+              <span class="check-status" id="check-etf-status"></span>
+            </div>
+            <div class="checklist-row" id="check-momentum">
+              <span class="check-icon" id="check-momentum-icon">○</span>
+              <div class="check-body">
+                <span class="check-label">Momentum</span>
+                <span class="check-detail" id="check-momentum-detail">Waiting for data...</span>
+              </div>
+              <span class="check-status" id="check-momentum-status"></span>
+            </div>
+          </div>
+          <div class="checklist-footer">
+            <span class="checklist-score" id="checklistScore">Score: —</span>
+            <span class="checklist-signal" id="checklistSignal">NO TRADE</span>
           </div>
         </div>
 
@@ -1275,6 +1396,7 @@
             delete portfolio[ticker];
             savePortfolio();
             updatePortfolioDisplay();
+            updateSignalChecklist();
         }
 
         function clearPortfolio() {
@@ -1743,6 +1865,71 @@
             updateUI();
             updateChart();
             calculateSignals();
+        }
+
+        function updateSignalChecklist() {
+          if (state.dataStatus !== 'LIVE' && state.dataStatus !== 'STALE') return;
+          const prices = state.prices || {};
+          const mas    = state.movingAverages || {};
+          const ti     = state.technicalIndicators || {};
+          const usoPrice  = prices.USO  || 0;
+          const xopPrice  = prices.XOP  || 0;
+          const gushPrice = prices.GUSH || 0;
+          const dripPrice = prices.DRIP || 0;
+          const usoMA9  = mas.USO?.MA9  || 0;
+          const xopMA9  = mas.XOP?.MA9  || 0;
+          const gushMA9 = mas.GUSH?.MA9 || 0;
+          const dripMA9 = mas.DRIP?.MA9 || 0;
+          const usoTrend = usoMA9 ? (usoPrice > usoMA9 ? 'UP' : 'DOWN') : null;
+          const xopTrend = xopMA9 ? (xopPrice > xopMA9 ? 'UP' : 'DOWN') : null;
+          const bullish  = usoTrend === 'UP'   && xopTrend === 'UP';
+          const bearish  = usoTrend === 'DOWN' && xopTrend === 'DOWN';
+          const etfTicker = bearish ? 'DRIP' : 'GUSH';
+          const etfPrice  = bearish ? dripPrice : gushPrice;
+          const etfMA9    = bearish ? dripMA9   : gushMA9;
+          const etfBreak  = etfMA9 ? etfPrice > etfMA9 : false;
+          const rsi = bearish ? (ti.DRIP?.RSI || 0) : (ti.GUSH?.RSI || 0);
+          const rsiPass = rsi > 50;
+          function setRow(id, pass, wait, detail) {
+            const row = document.getElementById('check-' + id);
+            const icon = document.getElementById('check-' + id + '-icon');
+            const detailEl = document.getElementById('check-' + id + '-detail');
+            const statusEl = document.getElementById('check-' + id + '-status');
+            if (!row) return;
+            const cls = wait ? 'wait' : pass ? 'pass' : 'fail';
+            row.className = 'checklist-row ' + (wait ? '' : (pass ? 'pass' : 'fail'));
+            icon.className = 'check-icon ' + cls;
+            icon.textContent = wait ? '○' : pass ? '✓' : '✗';
+            if (detailEl) detailEl.textContent = detail;
+            if (statusEl) { statusEl.textContent = wait ? '' : pass ? 'PASS' : 'FAIL'; statusEl.className = 'check-status ' + cls; }
+          }
+          if (!usoMA9 || !xopMA9) {
+            setRow('oil', false, true, 'Waiting for MA data...');
+            setRow('xop', false, true, 'Waiting for MA data...');
+            setRow('etf', false, true, 'Waiting for MA data...');
+            setRow('momentum', false, true, 'Waiting for RSI...');
+            return;
+          }
+          const oilPass = bullish || bearish;
+          const oilDetail = bullish ? 'USO > MA9 (' + usoPrice.toFixed(2) + ' vs ' + usoMA9.toFixed(2) + ')' : bearish ? 'USO < MA9 (' + usoPrice.toFixed(2) + ' vs ' + usoMA9.toFixed(2) + ')' : 'USO mixed — no clear direction';
+          setRow('oil', oilPass, false, oilDetail);
+          const xopPass = bullish || bearish;
+          const xopDetail = bullish ? 'XOP > MA9 (' + xopPrice.toFixed(2) + ' vs ' + xopMA9.toFixed(2) + ')' : bearish ? 'XOP < MA9 (' + xopPrice.toFixed(2) + ' vs ' + xopMA9.toFixed(2) + ')' : 'XOP mixed — no confirmation';
+          setRow('xop', xopPass, false, xopDetail);
+          const etfDetail = etfMA9 ? etfTicker + (etfBreak ? ' > ' : ' < ') + 'MA9 (' + etfPrice.toFixed(2) + ' vs ' + etfMA9.toFixed(2) + ')' : 'No MA9 data for ' + etfTicker;
+          setRow('etf', etfBreak, !etfMA9, etfDetail);
+          const momDetail = rsi > 0 ? 'RSI ' + rsi.toFixed(1) + (rsiPass ? ' — momentum building' : ' — below 50, weak') : 'RSI not available';
+          setRow('momentum', rsiPass, rsi === 0, momDetail);
+          const score = [oilPass, xopPass, etfBreak, rsiPass].filter(Boolean).length;
+          const scoreEl = document.getElementById('checklistScore');
+          const signalEl = document.getElementById('checklistSignal');
+          const badgeEl  = document.getElementById('checklistBadge');
+          if (scoreEl) scoreEl.textContent = 'Score: ' + score + ' / 4';
+          let sigText = 'NO TRADE', sigCls = 'notrade';
+          if (score === 4) { sigText = 'BUY'; sigCls = 'buy'; }
+          else if (score === 3) { sigText = 'WATCHLIST'; sigCls = 'watch'; }
+          if (signalEl) { signalEl.textContent = sigText; signalEl.className = 'checklist-signal ' + sigCls; }
+          if (badgeEl)  { badgeEl.textContent = score + '/4'; badgeEl.className = 'checklist-score-badge ' + sigCls; }
         }
 
         function calculateSignals() {
