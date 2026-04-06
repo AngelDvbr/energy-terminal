@@ -593,6 +593,44 @@
             flex-wrap: wrap;
         }
 
+        /* ── PROFIT PLAN ── */
+        .profit-plan-section { background:#020212; border:1px solid #FF9900; padding:12px; margin-bottom:8px; }
+        .profit-plan-title { color:#FF9900; font-weight:bold; margin-bottom:10px; font-size:11px; letter-spacing:1px; }
+        .profit-plan-empty { color:#555; font-size:10px; text-align:center; padding:12px 0; }
+        .profit-plan-cards { display:flex; gap:12px; flex-wrap:wrap; }
+        .profit-plan-card { flex:1; min-width:270px; background:#0a0500; border:1px solid #2a1a00; padding:10px; }
+        .pp-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+        .pp-ticker { color:#FF9900; font-weight:bold; font-size:13px; letter-spacing:1px; }
+        .pp-pnl { font-size:13px; font-weight:bold; }
+        .pp-pnl.up { color:#00FF41; }
+        .pp-pnl.down { color:#FF3131; }
+        .pp-progress-wrap { margin-bottom:6px; }
+        .pp-progress-marks { position:relative; height:10px; margin-bottom:1px; }
+        .pp-progress-mark { position:absolute; font-size:7px; color:#444; transform:translateX(-50%); }
+        .pp-progress { background:#111; border:1px solid #1a1a1a; height:5px; }
+        .pp-progress-fill { height:100%; background:linear-gradient(90deg,#00FF41 0%,#FF9900 100%); transition:width 0.4s; }
+        .pp-stages { display:flex; flex-direction:column; gap:3px; margin-bottom:8px; }
+        .pp-stage { display:flex; align-items:center; gap:7px; padding:4px 6px; border:1px solid #111; font-size:9px; border-radius:2px; }
+        .pp-stage.hit { border-color:#065f46; background:#011a0f; }
+        .pp-stage.next { border-color:#FF9900; background:#1a1200; }
+        .pp-stage.pending { opacity:0.45; }
+        .pp-stage-icon { width:11px; text-align:center; font-size:9px; }
+        .pp-stage-target { color:#FF9900; font-weight:bold; width:28px; font-size:9px; }
+        .pp-stage.hit .pp-stage-target { color:#00FF41; }
+        .pp-stage-action { color:#AAA; flex:1; }
+        .pp-stage.hit .pp-stage-action { color:#3a7a5a; text-decoration:line-through; }
+        .pp-stage.next .pp-stage-action { color:#FF9900; font-weight:bold; }
+        .pp-trim-btn { cursor:pointer; color:#333; font-size:8px; border:1px solid #2a2a2a; background:none; padding:1px 5px; font-family:'Courier New',monospace; transition:all 0.15s; }
+        .pp-trim-btn:hover { color:#FF9900; border-color:#FF9900; }
+        .pp-stage.hit .pp-trim-btn { color:#065f46; border-color:#065f46; }
+        .pp-footer { border-top:1px solid #1a1a1a; padding-top:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; font-size:9px; }
+        .pp-stop { color:#555; }
+        .pp-stop.be { color:#00FFFF; }
+        .pp-next-label { font-size:9px; color:#FF9900; font-weight:bold; margin-top:6px; letter-spacing:0.5px; }
+        .pp-done-label { font-size:9px; color:#00FF41; font-weight:bold; margin-top:6px; }
+        .pp-reset-btn { cursor:pointer; color:#333; font-size:8px; background:none; border:none; font-family:'Courier Nev', monospace; }
+        .pp-reset-btn:hover { color:#555; }
+
         /* ââ ALERT BANNER ââ */
         .alert-banner {
             position: fixed;
@@ -1223,6 +1261,14 @@
             <div class="portfolio-totals" id="portfolio-totals"></div>
         </div>
 
+                <!-- ── Profit Plan ── -->
+        <div class="profit-plan-section" id="profitPlanSection">
+            <div class="profit-plan-title">⚡ PROFIT PLAN — STAGED EXITS (LEVERAGED ETF)</div>
+            <div id="profitPlanCards" class="profit-plan-cards">
+                <div class="profit-plan-empty">No GUSH/DRIP positions tracked. Add a position above to activate the plan.</div>
+            </div>
+        </div>
+
         <!-- Technical Indicators -->
         <div class="tech-grid">
             <div class="tech-box">
@@ -1383,7 +1429,112 @@
             try { localStorage.setItem('energyPortfolio', JSON.stringify(portfolio)); } catch(e) {}
         }
 
-        function addPosition() {
+                // ─── PROFIT PLAN ─────────────────────────────────────────────
+        const PP_STAGES = [
+            { pct:  4, trim: '25%',    action: 'Trim 25% of position' },
+            { pct:  8, trim: '25%',    action: 'Trim 25% → move stop to breakeven' },
+            { pct: 12, trim: '25%',    action: 'Trim 25% → trail stop under MA9' },
+            { pct: 18, trim: 'runner', action: 'Manage runner — exit on weakness' }
+        ];
+        let profitPlan = {};
+        try { profitPlan = JSON.parse(localStorage.getItem('energyProfitPlan') || '{}'); } catch(e) {}
+
+        function saveProfitPlan() {
+            try { localStorage.setItem('energyProfitPlan', JSON.stringify(profitPlan)); } catch(e) {}
+        }
+
+        function toggleProfitStage(ticker, idx) {
+            if (!profitPlan[ticker]) profitPlan[ticker] = [false,false,false,false];
+            profitPlan[ticker][idx] = !profitPlan[ticker][idx];
+            saveProfitPlan();
+            updateProfitPlan();
+        }
+
+        function resetProfitPlan(ticker) {
+            profitPlan[ticker] = [false,false,false,false];
+            saveProfitPlan();
+            updateProfitPlan();
+        }
+
+        function updateProfitPlan() {
+            const container = document.getElementById('profitPlanCards');
+            if (!container) return;
+            const tickers = ['GUSH','DRIP'].filter(t => portfolio[t] && state.prices[t] > 0);
+            if (!tickers.length) {
+                container.innerHTML = '<div class="profit-plan-empty">No GUSH/DRIP positions tracked. Add a position above to activate the plan.</div>';
+                return;
+            }
+            let html = '';
+            for (const ticker of tickers) {
+                const pos  = portfolio[ticker];
+                const px   = state.prices[ticker];
+                const ma9  = (state.movingAverages[ticker] || {}).MI9 || 0;
+                const pnlPct = pos.avgCost > 0 ? ((px - pos.avgCost) / pos.avgCost) * 100 : 0;
+                const pnlCls = pnlPct >= 0 ? 'up' : 'down';
+                const pnlSign = pnlPct >= 0 ? '+' : '';
+                if (!profitPlan[ticker]) profitPlan[ticker] = [false,false,false,false];
+                const done = profitPlan[ticker];
+
+                // Next incomplete stage
+                let nextIdx = done.findIndex(v => !v);
+
+                // Stop label
+                let stopLabel = `Entry $${pos.avgCost.toFixed(2)}`;
+                let stopCls = '';
+                if (done[1]) { stopLabel = `Breakeven $${pos.avgCost.toFixed(2)}`; stopCls = 'be'; }
+                if (done[2] && ma9 > 0) { stopLabel = `MA9 trail $${ma9.toFixed(2)}`; stopCls = 'be'; }
+
+                // Progress %: 0 →+18% range
+                const prog = Math.min(100, Math.max(0, (pnlPct / 18) * 100));
+
+                // Stage rows
+                let stageRows = '';
+                PP_STAGES.forEach((s, i) => {
+                    const reached = pnlPct >= s.pct;
+                    const isDone  = done[i];
+                    const isNext  = i === nextIdx;
+                    const cls     = isDone ? 'hit' : (isNext ? 'next' : 'pending');
+                    const icon    = isDone ? '⛓' : (reached ? '◉' : '○');
+                    const btnTxt  = isDone ? '✑ DONE' : (reached ? 'TRIM ▸' : '—');
+                    stageRows += `
+                    <div class="pp-stage ${cls}">
+                        <span class="pp-stage-icon">${icon}</span>
+                        <span class="pp-stage-target">+${s.pct}%</span>
+                        <span class="pp-stage-action">${s.action}</span>
+                        <button class="pp-trim-btn" onclick="toggleProfitStage('${ticker}',${i})">${btnTxt}</button>
+                    </div>`;
+                });
+
+                // Next action line
+                const nextLine = nextIdx < 0
+                    ? `<div class="pp-done-label">✑ ALL STAGES COMPLETE — manage final runner</div>`
+                    : `<div class="pp-next-label">NEXT → +${PP_STAGES[nextIdx].pct}% : ${PPESTAGES[nextIdx].action}</div>`;
+
+                html += `
+                <div class="profit-plan-card">
+                    <div class="pp-card-header">
+                        <span class="pp-ticker">${ticker}</span>
+                        <span class="pp-pnl ${pnlCls}">${pnlSign}${pnlPct.toFixed(2)}%</span>
+                        <button class="pp-reset-btn" onclick="resetProfitPlan('${ticker}')">RESET</button>
+                    </div>
+                    <div class="pp-progress-wrap">
+                        <div class="pp-progress-marks">
+                            ${PPESTAGES.map(s=>`<span class="pp-progress-mark" style="left:${(s.pct/18*100).toFixed(1)}%">+${s.pct}%</span>`).join('')}
+                        </div>
+                        <div class="pp-progress"><div class="pp-progress-fill" style="width:${prog.toFixed(1)}%"></div></div>
+                    </div>
+                    <div class="pp-stages">${stageRows}</div>
+                    <div class="pp-footer">
+                        <span class="pp-stop ${stopCls}">STOP: ${stopLabel}</span>
+                        ${ma9>0 ? `<span style="color:#444;">MA9 $${ma9.toFixed(2)}</span>` : ''}
+                    </div>
+                    ${nextLine}
+                </div>`;
+            }
+            container.innerHTML = html;
+        }
+
+function addPosition() {
             const ticker = document.getElementById('port-ticker').value;
             const shares = parseFloat(document.getElementById('port-shares').value);
             const cost   = parseFloat(document.getElementById('port-cost').value);
@@ -1393,6 +1544,7 @@
             portfolio[ticker] = { shares, avgCost: cost };
             savePortfolio();
             updatePortfolioDisplay();
+            updateProfitPlan();
             document.getElementById('port-shares').value = '';
             document.getElementById('port-cost').value = '';
         }
@@ -1401,13 +1553,15 @@
             delete portfolio[ticker];
             savePortfolio();
             updatePortfolioDisplay();
+            updateProfitPlan();
             updateSignalChecklist();
         }
 
         function clearPortfolio() {
-            portfolio = {};
-            savePortfolio();
+            portfolio = {}; profitPlan = {};
+            savePortfolio(); saveProfitPlan();
             updatePortfolioDisplay();
+            updateProfitPlan();
         }
 
         function getPortfolioAction(ticker, currentPrice, avgCost, signal, confidence) {
