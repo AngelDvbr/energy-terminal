@@ -2888,7 +2888,7 @@ section, .section, .panel-section {
 <script id="discord-alerts">
 /* ── Discord Webhook Alert Integration ── */
 (function() {
-  var DISCORD_WEBHOOK = 'YOUR_DISCORD_WEBHOOK_URL_HERE';
+  var DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1490601343499374763/hv8_m7UgRViZKUZO-iTZl2eXdFpta-YkkMgRaSZmsPlvd6q6AuG9e6Zaq2ak_sf1l9wV';
   var MIN_CONFIDENCE = 15;
   var DEDUP_WINDOW_MS = 5 * 60 * 1000;
   var _sentAlerts = {};
@@ -2900,7 +2900,7 @@ section, .section, .panel-section {
   function _markSent(key) { _sentAlerts[key] = Date.now(); }
 
   window.sendDiscordAlert = function(payload) {
-    if (!DISCORD_WEBHOOK || DISCORD_WEBHOOK === 'YOUR_DISCORD_WEBHOOK_URL_HERE') {
+    if (!DISCORD_WEBHOOK || DISCORD_WEBHOOK === 'https://discord.com/api/webhooks/1490601343499374763/hv8_m7UgRViZKUZO-iTZl2eXdFpta-YkkMgRaSZmsPlvd6q6AuG9e6Zaq2ak_sf1l9wV') {
       console.warn('[Discord] No webhook URL configured. Set DISCORD_WEBHOOK in discord-alerts script.'); return;
     }
     fetch(DISCORD_WEBHOOK, {
