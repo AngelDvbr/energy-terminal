@@ -2885,6 +2885,178 @@ section, .section, .panel-section {
 }
 </style>
 
+<script id="discord-alerts">
+/* ── Discord Webhook Alert Integration ── */
+(function() {
+  var DISCORD_WEBHOOK = 'YOUR_DISCORD_WEBHOOK_URL_HERE';
+  var MIN_CONFIDENCE = 15;
+  var DEDUP_WINDOW_MS = 5 * 60 * 1000;
+  var _sentAlerts = {};
+
+  function _isDuplicate(key) {
+    var last = _sentAlerts[key];
+    return last ? (Date.now() - last) < DEDUP_WINDOW_MS : false;
+  }
+  function _markSent(key) { _sentAlerts[key] = Date.now(); }
+
+  window.sendDiscordAlert = function(payload) {
+    if (!DISCORD_WEBHOOK || DISCORD_WEBHOOK === 'YOUR_DISCORD_WEBHOOK_URL_HERE') {
+      console.warn('[Discord] No webhook URL configured. Set DISCORD_WEBHOOK in discord-alerts script.'); return;
+    }
+    fetch(DISCORD_WEBHOOK, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    }).then(function(r) {
+      if (!r.ok) console.warn('[Discord] HTTP error:', r.status);
+      else console.log('[Discord] Alert sent successfully.');
+    }).catch(function(e) { console.error('[Discord] Failed to send alert:', e); });
+  };
+
+  function _regime() {
+    if (typeof state !== 'undefined' && state.regime) return state.regime;
+    return 'UNKNOWN';
+  }
+
+  function _checklistSummary() {
+    if (typeof state === 'undefined' || !state.checklist) return 'N/A';
+    var items = state.checklist;
+    var passed = Object.values(items).filter(Boolean).length;
+    var total = Object.keys(items).length;
+    return passed + '/' + total + ' checks passed';
+  }
+
+  function _px(ticker) {
+    if (typeof state !== 'undefined' && state.prices && state.prices[ticker]) {
+      return '$' + parseFloat(state.prices[ticker]).toFixed(2);
+    }
+    return '$??';
+  }
+
+  var C = { BUY: 36865, SELL: 16723249, SWITCH: 65535, PROFIT: 65280, LOSS: 16711680 };
+
+  function _embed(title, desc, color, fields, footer) {
+    return {
+      embeds: [{
+        title: title,
+        description: desc,
+        color: color,
+        fields: fields || [],
+        timestamp: new Date().toISOString(),
+        footer: { text: footer || 'Energy Terminal' }
+      }]
+    };
+  }
+
+  function alertBuy(ticker, conf, score) {
+    var key = 'BUY_' + ticker;
+    if (_isDuplicate(key) || conf < MIN_CONFIDENCE) return;
+    _markSent(key);
+    var emoji = ticker === 'GUSH' ? '\u{1F7E2}' : '\u{1F534}';
+    window.sendDiscordAlert(_embed(
+      emoji + ' BUY ' + ticker,
+      '**Signal:** BUY ' + ticker + '\n**Price:** ' + _px(ticker) + '\n**Regime:** ' + _regime(),
+      ticker === 'GUSH' ? C.BUY : C.SELL,
+      [
+        {name: 'Confidence', value: conf + '%', inline: true},
+        {name: 'Score', value: String(score), inline: true},
+        {name: 'Checklist', value: _checklistSummary(), inline: false}
+      ],
+      'Energy Terminal Alert'
+    ));
+  }
+
+  function alertSell(ticker, conf, score) {
+    var key = 'SELL_' + ticker;
+    if (_isDuplicate(key) || conf < MIN_CONFIDENCE) return;
+    _markSent(key);
+    window.sendDiscordAlert(_embed(
+      '\u{1F53B} CUT LOSS ' + ticker,
+      '**Signal:** SELL/EXIT ' + ticker + '\n**Price:** ' + _px(ticker) + '\n**Regime:** ' + _regime(),
+      C.SELL,
+      [
+        {name: 'Confidence', value: conf + '%', inline: true},
+        {name: 'Score', value: String(score), inline: true},
+        {name: 'Checklist', value: _checklistSummary(), inline: false}
+      ],
+      'Energy Terminal Alert'
+    ));
+  }
+
+  function alertTakeProfit(ticker, pnl, price) {
+    var key = 'PROFIT_' + ticker;
+    if (_isDuplicate(key)) return;
+    _markSent(key);
+    window.sendDiscordAlert(_embed(
+      '\u{1F4B8} TAKE PROFIT \u2014 ' + ticker,
+      '**Ticker:** ' + ticker + '\n**Price:** $' + parseFloat(price).toFixed(2) + '\n**P&L:** +' + pnl + '%',
+      C.PROFIT,
+      [{name: 'Regime', value: _regime(), inline: true}],
+      'Energy Terminal Alert'
+    ));
+  }
+
+  function alertCutLoss(ticker, pnl, price) {
+    var key = 'LOSS_' + ticker;
+    if (_isDuplicate(key)) return;
+    _markSent(key);
+    window.sendDiscordAlert(_embed(
+      '\u{1F6D1} STOP LOSS \u2014 ' + ticker,
+      '**Ticker:** ' + ticker + '\n**Price:** $' + parseFloat(price).toFixed(2) + '\n**P&L:** ' + pnl + '%',
+      C.LOSS,
+      [{name: 'Regime', value: _regime(), inline: true}],
+      'Energy Terminal Alert'
+    ));
+  }
+
+  function alertSwitch(from, to) {
+    var key = 'SWITCH_' + from + '_' + to;
+    if (_isDuplicate(key)) return;
+    _markSent(key);
+    window.sendDiscordAlert(_embed(
+      '\u{1F504} SWITCH SIGNAL',
+      '**Exit:** ' + from + '\n**Enter:** ' + to + '\n**Regime:** ' + _regime(),
+      C.SWITCH,
+      [{name: 'Checklist', value: _checklistSummary(), inline: false}],
+      'Energy Terminal Alert'
+    ));
+  }
+
+  function _dcCheckAlerts() {
+    if (window._origCheckAlerts) window._origCheckAlerts();
+    if (typeof state === 'undefined' || !state.signals) return;
+    var gs = state.signals.GUSH || {};
+    var ds = state.signals.DRIP || {};
+    if (gs.signal === 'BUY')  alertBuy('GUSH', gs.confidence, gs.score);
+    if (gs.signal === 'SELL') alertSell('GUSH', gs.confidence, gs.score);
+    if (ds.signal === 'BUY')  alertBuy('DRIP', ds.confidence, ds.score);
+    if (ds.signal === 'SELL') alertSell('DRIP', ds.confidence, ds.score);
+    if (gs.signal === 'BUY' && ds.signal === 'SELL') alertSwitch('DRIP', 'GUSH');
+    if (ds.signal === 'BUY' && gs.signal === 'SELL') alertSwitch('GUSH', 'DRIP');
+    if (typeof state !== 'undefined' && state.portfolio) {
+      var port = state.portfolio;
+      if (port.GUSH && port.GUSH.pnlPct !== undefined) {
+        if (port.GUSH.pnlPct >= 30) alertTakeProfit('GUSH', port.GUSH.pnlPct, port.GUSH.currentPrice || 0);
+        if (port.GUSH.pnlPct <= -15) alertCutLoss('GUSH', port.GUSH.pnlPct, port.GUSH.currentPrice || 0);
+      }
+      if (port.DRIP && port.DRIP.pnlPct !== undefined) {
+        if (port.DRIP.pnlPct >= 30) alertTakeProfit('DRIP', port.DRIP.pnlPct, port.DRIP.currentPrice || 0);
+        if (port.DRIP.pnlPct <= -15) alertCutLoss('DRIP', port.DRIP.pnlPct, port.DRIP.currentPrice || 0);
+      }
+    }
+  }
+
+  setTimeout(function() {
+    if (typeof checkAlerts === 'function' && !window._origCheckAlerts) {
+      window._origCheckAlerts = checkAlerts;
+      window.checkAlerts = _dcCheckAlerts;
+      console.log('[Discord] Alert hooks installed successfully.');
+    } else {
+      console.warn('[Discord] checkAlerts not found or already hooked.');
+    }
+  }, 0);
+})();
+</script>
 <!-- ── Multi-Timeframe Toggle ─────────────────────────────── -->
 <style id="tf-style">
 .tf-toggle-group {
