@@ -1445,9 +1445,30 @@
 
         function toggleProfitStage(ticker, idx) {
             if (!profitPlan[ticker]) profitPlan[ticker] = [false,false,false,false];
-            profitPlan[ticker][idx] = !profitPlan[ticker][idx];
+            const nowDone = !profitPlan[ticker][idx];
+            profitPlan[ticker][idx] = nowDone;
             saveProfitPlan();
             updateProfitPlan();
+            if (nowDone && typeof window.sendDiscordAlert === 'function') {
+                const s = PP_STAGES[idx];
+                const px = (state.prices || {})[ticker] || 0;
+                const pos = portfolio[ticker];
+                const pnlPct = pos && pos.avgCost > 0 ? ((px - pos.avgCost) / pos.avgCost * 100) : 0;
+                const ma9 = ((state.movingAverages || {})[ticker] || {}).MA9 || 0;
+                const stopNotes = ['Hold entry stop', 'Move stop to breakeven', 'Trail stop under MA9 ($' + (ma9 > 0 ? ma9.toFixed(2) : '—') + ')', 'Manage runner'];
+                window.sendDiscordAlert({ embeds: [{
+                    title: '💸 PROFIT TRIM — ' + ticker + ' +' + s.pct + '%',
+                    description: '**Action:** ' + s.action + '\n**Price:** $' + (px > 0 ? px.toFixed(2) : '—') + '\n**P&L:** +' + pnlPct.toFixed(2) + '%',
+                    color: 65280,
+                    fields: [
+                        { name: 'Trim Size', value: s.trim + ' of position', inline: true },
+                        { name: 'Stage', value: (idx + 1) + ' of ' + PP_STAGES.length, inline: true },
+                        { name: 'Stop Update', value: stopNotes[idx], inline: false }
+                    ],
+                    timestamp: new Date().toISOString(),
+                    footer: { text: 'Energy Terminal — Profit Plan' }
+                }]});
+            }
         }
 
         function resetProfitPlan(ticker) {
