@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Energy Derivatives Terminal v3.0</title>
- <style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <style>
         * {
             margin: 0;
             padding: 0;
@@ -484,7 +485,7 @@
             color: #FF3131;
         }
 
-        /* ââ RECOMMENDATION ENGINE ââ */
+        /* ── RECOMMENDATION ENGINE ── */
         .rec-panel {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -526,7 +527,7 @@
             padding-top: 6px;
         }
 
-        /* ââ PORTFOLIO TRACKER ââ */
+        /* ── PORTFOLIO TRACKER ── */
         .portfolio-section {
             background-color: #020212;
             border: 1px solid #00FFFF;
@@ -628,10 +629,10 @@
         .pp-stop.be { color:#00FFFF; }
         .pp-next-label { font-size:9px; color:#FF9900; font-weight:bold; margin-top:6px; letter-spacing:0.5px; }
         .pp-done-label { font-size:9px; color:#00FF41; font-weight:bold; margin-top:6px; }
-        .pp-reset-btn { cursor:pointer; color:#333; font-size:8px; background:none; border:none; font-family:'Courier Nev', monospace; }
+        .pp-reset-btn { cursor:pointer; color:#333; font-size:8px; background:none; border:none; font-family:'Courier New',monospace; }
         .pp-reset-btn:hover { color:#555; }
 
-        /* ââ ALERT BANNER ââ */
+        /* ── ALERT BANNER ── */
         .alert-banner {
             position: fixed;
             top: 0; left: 0; right: 0;
@@ -655,224 +656,90 @@
         }
         .notif-btn.active { border-color: #00FF41; color: #00FF41; }
 
-        /* ── UI Polish Override ── */
-        body { font-size: 13px; padding: 16px; background: #050508; }
-        .container { max-width: 1600px; }
-        .header { border-radius: 10px; border-color: rgba(255,153,0,.35); padding: 12px 20px; margin-bottom: 16px; background: #0a0a0f; font-size: 12px; }
-        .title { font-size: 13px; letter-spacing: 1px; }
-        .price-grid { gap: 12px; margin-bottom: 16px; }
-        .price-box { background: #0d1117; border: 1px solid #1e293b; border-radius: 10px; padding: 16px; font-size: 12px; transition: border-color .2s; }
-        .price-box:hover { border-color: rgba(255,153,0,.35); }
-        .ticker-name { font-size: 14px; margin-bottom: 8px; letter-spacing: 1px; }
-        .price-row { font-size: 24px; margin-bottom: 6px; font-weight: bold; }
-        .price-row span:first-child { color: #f1f5f9; }
-        .secondary-info { font-size: 11px; color: #64748b; margin-bottom: 6px; }
-        .volume-info { font-size: 11px; color: #475569; }
-        .signals-grid { gap: 12px; margin-bottom: 16px; }
-        .signal-box { background: #0d1117; border: 1px solid #1e293b; border-radius: 10px; padding: 16px; font-size: 12px; }
-        .signal-title { font-size: 11px; letter-spacing: 1.5px; color: #f59e0b; margin-bottom: 10px; }
-        .signal-value { font-size: 22px; margin-bottom: 10px; }
-        .confidence { font-size: 11px; color: #64748b; margin-top: 6px; }
-        .breakdown { font-size: 10px; color: #475569; padding-top: 8px; margin-top: 10px; }
-        .breakdown-item { margin-bottom: 4px; line-height: 1.5; }
-        .rec-panel { gap: 12px; margin-bottom: 16px; }
-        .rec-box { background: #0d1117; border: 1px solid rgba(255,153,0,.2); border-radius: 10px; padding: 16px; }
-        .rec-header { font-size: 11px; letter-spacing: 1.5px; margin-bottom: 10px; padding-bottom: 8px; }
-        .rec-action { font-size: 20px; letter-spacing: 2px; margin-bottom: 8px; }
-        .rec-reasoning { font-size: 11px; color: #94a3b8; line-height: 1.6; margin-bottom: 8px; }
-        .rec-threshold { font-size: 10px; color: #475569; padding-top: 8px; }
-        .tech-grid { gap: 12px; margin-bottom: 16px; }
-        .tech-box { background: #0d1117; border: 1px solid #1e293b; border-radius: 8px; padding: 14px; font-size: 11px; }
-        .tech-title { font-size: 11px; letter-spacing: 1px; margin-bottom: 8px; }
-        .tech-ticker { font-size: 12px; margin-bottom: 6px; margin-top: 4px; }
-        .tech-value { font-size: 11px; color: #64748b; margin-bottom: 5px; }
-        .moving-avg-grid { gap: 12px; margin-bottom: 16px; }
-        .moving-avg-box { background: #0d1117; border: 1px solid #1e293b; border-radius: 8px; padding: 14px; font-size: 11px; }
-        .chart-container { background: #0d1117; border: 1px solid #1e293b; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
-        .chart-title { font-size: 11px; letter-spacing: 1px; margin-bottom: 10px; }
-        .signal-log { background: #0d1117; border: 1px solid #1e293b; border-radius: 8px; padding: 14px; margin-bottom: 16px; }
-        .log-title { font-size: 11px; letter-spacing: 1px; margin-bottom: 8px; }
-        .log-content { font-size: 11px; }
-        .log-entry { margin-bottom: 5px; padding-bottom: 5px; }
-        .log-time { font-size: 10px; min-width: 70px; }
-        .log-type { min-width: 80px; font-size: 10px; }
-        .log-message { font-size: 11px; color: #94a3b8; }
-        .portfolio-section { background: #020215; border: 1px solid rgba(0,255,255,.15); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
-        .portfolio-title { font-size: 12px; margin-bottom: 12px; }
-        .portfolio-table th { font-size: 10px; padding: 6px 10px; letter-spacing: 1px; }
-        .portfolio-table td { padding: 7px 10px; font-size: 11px; }
-        .port-label { font-size: 10px; color: #64748b; }
-        .portfolio-input, .portfolio-select { padding: 6px 8px; font-size: 11px; border-radius: 4px; }
-        .news-ticker { border-radius: 6px; font-size: 11px; padding: 7px 12px; margin-bottom: 16px; border-color: rgba(255,153,0,.3); }
-        .button { padding: 6px 12px; border-radius: 6px; font-size: 11px; }
-        .heatmap-cell { border-radius: 4px; padding: 6px; }
-        .heatmap-label { font-size: 10px; }
-        .heatmap-value { font-size: 13px; }
-        .geo-risk-score { font-size: 22px; }
-        .progress-bar { border-radius: 3px; height: 5px; }
-        @media (max-width:900px) {
-          body { padding: 10px; }
-          .price-grid { grid-template-columns: repeat(2,1fr); }
-          .signals-grid { grid-template-columns: 1fr; }
-          .rec-panel { grid-template-columns: 1fr; }
-          .tech-grid { grid-template-columns: 1fr 1fr; }
-          .moving-avg-grid { grid-template-columns: repeat(2,1fr); }
-        }
-        @media (max-width:600px) {
-          .price-grid { grid-template-columns: 1fr 1fr; }
-          .tech-grid { grid-template-columns: 1fr; }
-          .header { flex-direction: column; gap: 10px; align-items: flex-start; }
-          .header-right { flex-wrap: wrap; gap: 10px; }
+        .energy-ai-panel {
+          margin-top: 24px;
         }
 
-        /* ── AI Signal Panel ── */
-        .ai-signal-section { margin-top: 20px; }
-        .ai-panel-header { display:flex; align-items:center; gap:12px; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid rgba(0,255,65,0.15); }
-        .ai-panel-title { font-size:10px; font-weight:bold; letter-spacing:2px; color:#00FF41; text-transform:uppercase; }
-        .ai-panel-ts { font-size:9px; color:#444; letter-spacing:1px; }
-        .sig-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:10px; }
-        .sig-card { background:#0d1117; border:1px solid #1e293b; border-radius:10px; padding:14px 16px; position:relative; overflow:hidden; }
-        .sig-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:transparent; transition:background .3s; }
-        .sig-card.ac-green::before { background:#22c55e; }
-        .sig-card.ac-red::before { background:#ef4444; }
-        .sig-card.ac-amber::before { background:#f59e0b; }
-        .sig-card.ac-blue::before { background:#3b82f6; }
-        .sc-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:#475569; margin-bottom:8px; }
-        .sc-big { font-size:26px; font-weight:bold; color:#e2e8f0; line-height:1; margin-bottom:4px; }
-        .sc-sub { font-size:11px; color:#64748b; line-height:1.4; }
-        .rg-badge { display:inline-block; padding:4px 10px; border-radius:6px; font-size:10px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
-        .rg-bull { background:#14532d; color:#4ade80; }
-        .rg-bear { background:#7f1d1d; color:#f87171; }
-        .rg-chop { background:#78350f; color:#fcd34d; }
-        .rg-mixed { background:#1e3a8a; color:#93c5fd; }
-        .ss-badge { display:inline-flex; align-items:center; padding:5px 12px; border-radius:7px; font-size:12px; font-weight:bold; letter-spacing:1px; margin-bottom:6px; }
-        .ss-buy    { background:#14532d; color:#4ade80; border:1px solid #166534; }
-        .ss-hold   { background:#1e3a8a; color:#93c5fd; border:1px solid #1d4ed8; }
-        .ss-watch  { background:#78350f; color:#fcd34d; border:1px solid #92400e; }
-        .ss-none   { background:#1e293b; color:#64748b; border:1px solid #334155; }
-        .ss-profit { background:#065f46; color:#34d399; border:1px solid #047857; }
-        .ss-cut    { background:#7f1d1d; color:#f87171; border:1px solid #991b1b; }
-        @keyframes pulse-buy { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.35)} 50%{box-shadow:0 0 0 7px rgba(74,222,128,0)} }
-        .ss-buy.pulsing { animation:pulse-buy 2s infinite; }
-        .conf-bar-wrap { height:4px; background:#1e293b; border-radius:2px; margin-top:8px; }
-        .conf-bar-fill { height:100%; width:0%; border-radius:2px; transition:width .6s,background .4s; }
-        .analysis-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
-        .tp-card { background:#0d1117; border:1px solid #1e293b; border-radius:10px; padding:14px 16px; }
-        .tp-grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:10px; }
-        .tp-box { background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:10px 12px; }
-        .tp-lbl { font-size:9px; text-transform:uppercase; letter-spacing:1px; color:#475569; margin-bottom:4px; }
-        .tp-val { font-size:14px; font-weight:bold; color:#e2e8f0; }
-        @media(max-width:768px){
-          .sig-grid { grid-template-columns:repeat(2,1fr); }
-          .analysis-grid { grid-template-columns:1fr; }
-          .tp-grid4 { grid-template-columns:repeat(2,1fr); }
+        .energy-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 16px;
+          margin-bottom: 16px;
         }
 
-/* ── Alerts Panel ── */
-.alerts-panel {
-  background: #0d1117;
-  border: 1px solid #21262d;
-  border-radius: 10px;
-  padding: 16px;
-  margin: 16px 0;
-}
-.alerts-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  border-bottom: 1px solid #21262d;
-  padding-bottom: 10px;
-}
-.alerts-title {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  color: #8b949e;
-  text-transform: uppercase;
-  flex: 1;
-}
-.alerts-count {
-  font-size: 11px;
-  color: #484f58;
-}
-.alerts-clear {
-  background: none;
-  border: 1px solid #30363d;
-  color: #8b949e;
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  letter-spacing: 0.5px;
-}
-.alerts-clear:hover { border-color: #8b949e; color: #e6edf3; }
-.alerts-feed { display: flex; flex-direction: column; gap: 6px; }
-.alerts-empty { color: #484f58; font-size: 12px; text-align: center; padding: 16px 0; }
-.alert-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 7px;
-  background: #161b22;
-  border-left: 3px solid #30363d;
-  animation: alertSlideIn 0.3s ease;
-}
-@keyframes alertSlideIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.alert-badge {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  padding: 2px 7px;
-  border-radius: 4px;
-  white-space: nowrap;
-  text-transform: uppercase;
-  margin-top: 1px;
-}
-.alert-badge.bullish  { background: rgba(35,134,54,0.25); color: #3fb950; border: 1px solid #238636; }
-.alert-badge.bearish  { background: rgba(248,81,73,0.15);  color: #f85149; border: 1px solid #da3633; }
-.alert-badge.watchlist{ background: rgba(210,153,34,0.15); color: #e3b341; border: 1px solid #9e6a03; }
-.alert-badge.neutral  { background: rgba(139,148,158,0.1); color: #8b949e; border: 1px solid #30363d; }
-.alert-badge.georisk  { background: rgba(163,113,247,0.15);color: #a371f7; border: 1px solid #8957e5; }
-.alert-badge.danger   { background: rgba(248,81,73,0.2);   color: #f85149; border: 1px solid #da3633; }
-.alert-row.bullish  { border-left-color: #238636; }
-.alert-row.bearish  { border-left-color: #da3633; }
-.alert-row.watchlist{ border-left-color: #9e6a03; }
-.alert-row.neutral  { border-left-color: #30363d; }
-.alert-row.georisk  { border-left-color: #8957e5; }
-.alert-row.danger   { border-left-color: #da3633; }
-.alert-body { flex: 1; min-width: 0; }
-.alert-headline { font-size: 12px; font-weight: 600; color: #e6edf3; margin-bottom: 2px; }
-.alert-desc { font-size: 11px; color: #8b949e; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.alert-footer { display: flex; align-items: center; gap: 8px; }
-.alert-priority { font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
-.alert-priority.HIGH   { color: #f85149; }
-.alert-priority.MEDIUM { color: #e3b341; }
-.alert-priority.LOW    { color: #484f58; }
-.alert-time { font-size: 10px; color: #484f58; }
+        .second-row,
+        .third-row {
+          grid-template-columns: repeat(2, 1fr);
+        }
 
-/* ── Safety State Styles ── */
-.data-unavailable { color: #484f58 !important; }
-.signal-blocked { opacity: 0.4; pointer-events: none; }
-.loading-shimmer {
-    background: linear-gradient(90deg, #161b22 25%, #21262d 50%, #161b22 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    border-radius: 4px;
-    color: transparent !important;
-    user-select: none;
-}
-@keyframes shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-.status-live  { background: rgba(35,134,54,0.2); color: #3fb950; border-color: #238636; }
-.status-error { background: rgba(248,81,73,0.2);  color: #f85149; border-color: #da3633; }
-.status-loading { background: rgba(139,148,158,0.1); color: #8b949e; border-color: #30363d; }
+        .panel-card {
+          background: #111827;
+          border: 1px solid rgba(148,163,184,0.15);
+          border-radius: 14px;
+          padding: 16px;
+        }
+
+        .panel-label {
+          font-size: 12px;
+          text-transform: uppercase;
+          opacity: 0.6;
+          margin-bottom: 10px;
+        }
+
+        .panel-subtext {
+          font-size: 14px;
+          opacity: 0.85;
+        }
+
+        .panel-maintext {
+          font-size: 15px;
+        }
+
+        .signal-row {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 8px;
+        }
+
+        .signal-badge {
+          padding: 6px 12px;
+          border-radius: 999px;
+          font-size: 12px;
+          font-weight: bold;
+        }
+
+        .signal-ticker {
+          font-size: 20px;
+          font-weight: bold;
+        }
+
+        .metric-big {
+          font-size: 26px;
+          font-weight: bold;
+        }
+
+        .trade-plan-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+        }
+
+        .plan-box {
+          background: rgba(255,255,255,0.03);
+          padding: 10px;
+          border-radius: 10px;
+        }
+
+        .badge-buy { background:#14532d; color:#86efac; }
+        .badge-hold { background:#1e3a8a; color:#93c5fd; }
+        .badge-watch { background:#854d0e; color:#fde68a; }
+        .badge-profit { background:#065f46; color:#6ee7b7; }
+        .badge-loss { background:#7f1d1d; color:#fca5a5; }
+        .badge-neutral { background:#334155; color:#cbd5e1; }
+        .badge-bullish { background:#14532d; color:#86efac; }
+        .badge-bearish { background:#7f1d1d; color:#fca5a5; }
+        .badge-chop { background:#78350f; color:#fcd34d; }
+
 /* ── Signal Checklist Card ── */
 .checklist-card {
   background: #0d1117;
@@ -911,6 +778,64 @@
 .checklist-score-badge.watch   { background: rgba(210,153,34,0.15); color: #e3b341; border-color: #9e6a03; }
 .checklist-score-badge.notrade { background: rgba(139,148,158,0.1); color: #8b949e; border-color: #30363d; }
 .checklist-rows { display: flex; flex-direction: column; gap: 2px; }
+
+/* ── STAGE STRIP ── */
+.stage-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  border-radius: 6px;
+  background: #070710;
+  border: 1px solid #1a1a2e;
+}
+.stage-badge-big {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  padding: 5px 12px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.stage-badge-big.early-bull { background: #0d1f00; color: #AAFF00; border: 1px solid #AAFF00; }
+.stage-badge-big.early-bear { background: #1f0a00; color: #FF8C00; border: 1px solid #FF8C00; }
+.stage-badge-big.triggered  { background: #1f1a00; color: #FFFF00; border: 1px solid #FFFF00; }
+.stage-badge-big.confirmed  { background: #001f00; color: #00FF41; border: 1px solid #00FF41; }
+.stage-badge-big.notrade    { background: #111;    color: #555;    border: 1px solid #333;    }
+.stage-action {
+  font-size: 11px;
+  color: #aaa;
+  line-height: 1.4;
+}
+
+/* ── COLLAPSIBLE ADVANCED SECTION ── */
+.advanced-toggle-btn {
+  display: block;
+  width: 100%;
+  background: #07070f;
+  border: 1px solid #1a1a2a;
+  border-bottom: none;
+  color: #444;
+  font-size: 9px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  padding: 5px 12px;
+  cursor: pointer;
+  text-align: center;
+  text-transform: uppercase;
+  transition: color 0.2s;
+  margin-top: 8px;
+}
+.advanced-toggle-btn:hover { color: #888; background: #0d0d1a; }
+.advanced-section {
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+  max-height: 1200px;
+}
+.advanced-section.collapsed { max-height: 0; }
 .checklist-row {
   display: flex;
   align-items: center;
@@ -924,32 +849,78 @@
 .checklist-row.pass { border-left-color: #238636; }
 .checklist-row.warn { border-left-color: #9e6a03; }
 .checklist-row.fail { border-left-color: #da3633; }
-.check-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; line-height: 1; }
+.check-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
 .check-icon.pass { color: #3fb950; }
 .check-icon.warn { color: #e3b341; }
 .check-icon.fail { color: #f85149; }
 .check-icon.wait { color: #484f58; }
 .check-body { flex: 1; min-width: 0; }
-.check-label { display: block; font-size: 12px; font-weight: 600; color: #e6edf3; margin-bottom: 1px; }
-.check-detail { display: block; font-size: 10px; color: #8b949e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.check-status { font-size: 9px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; flex-shrink: 0; }
+.check-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e6edf3;
+  margin-bottom: 1px;
+}
+.check-detail {
+  display: block;
+  font-size: 10px;
+  color: #8b949e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.check-status {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
 .check-status.pass { color: #3fb950; }
 .check-status.warn { color: #e3b341; }
 .check-status.fail { color: #f85149; }
-.checklist-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 10px; border-top: 1px solid #21262d; }
-.checklist-score { font-size: 12px; font-weight: 700; color: #8b949e; letter-spacing: 0.5px; }
-.checklist-signal { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; padding: 3px 10px; border-radius: 5px; background: rgba(139,148,158,0.1); color: #8b949e; border: 1px solid #30363d; }
+.checklist-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #21262d;
+}
+.checklist-score {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8b949e;
+  letter-spacing: 0.5px;
+}
+.checklist-signal {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 5px;
+  background: rgba(139,148,158,0.1);
+  color: #8b949e;
+  border: 1px solid #30363d;
+}
 .checklist-signal.buy     { background: rgba(35,134,54,0.2);  color: #3fb950; border-color: #238636; }
 .checklist-signal.watch   { background: rgba(210,153,34,0.15); color: #e3b341; border-color: #9e6a03; }
 .checklist-signal.notrade { background: rgba(139,148,158,0.1); color: #8b949e; border-color: #30363d; }
+
 @media (max-width: 600px) {
   .check-label { font-size: 11px; }
   .check-detail { font-size: 9px; }
   .checklist-signal { font-size: 10px; letter-spacing: 1px; }
 }
-
     </style>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <!-- Alert Banner -->
@@ -970,7 +941,7 @@
                     <span class="status-text live" id="statusText">LIVE</span>
                 </div>
                 <span class="update-time" id="updateTime"></span>
-                <button class="notif-btn" id="notifBtn" onclick="enableNotifications()">ð ALERTS</button>
+                <button class="notif-btn" id="notifBtn" onclick="enableNotifications()">🔕 ALERTS</button>
                 <button class="button" id="historyBtn">HISTORY</button>
             </div>
         </div>
@@ -1027,6 +998,10 @@
             </div>
         </div>
 
+        <!-- Advanced Details Toggle -->
+        <button class="advanced-toggle-btn" id="advancedToggleBtn" onclick="toggleAdvanced()">▼ ADVANCED DETAILS — GUSH / DRIP SIGNALS</button>
+        <div class="advanced-section collapsed" id="advancedSection">
+
         <!-- Signals and Geo Risk -->
         <div class="signals-grid">
             <div class="signal-box">
@@ -1074,97 +1049,90 @@
         <!-- What To Do Now -->
         <div class="rec-panel">
             <div class="rec-box">
-                <div class="rec-header">â¶ GUSH â WHAT TO DO NOW</div>
+                <div class="rec-header">▶ GUSH — WHAT TO DO NOW</div>
                 <div class="rec-action signal-hold" id="rec-gush-action">HOLD</div>
                 <div class="rec-reasoning" id="rec-gush-reason">Awaiting data...</div>
                 <div class="rec-threshold" id="rec-gush-levels">Entry: -- | Target: -- | Stop: --</div>
             </div>
             <div class="rec-box">
-                <div class="rec-header">â¶ DRIP â WHAT TO DO NOW</div>
+                <div class="rec-header">▶ DRIP — WHAT TO DO NOW</div>
                 <div class="rec-action signal-hold" id="rec-drip-action">HOLD</div>
                 <div class="rec-reasoning" id="rec-drip-reason">Awaiting data...</div>
                 <div class="rec-threshold" id="rec-drip-levels">Entry: -- | Target: -- | Stop: --</div>
             </div>
             <div class="rec-box">
-                <div class="rec-header">â¶ MARKET OUTLOOK</div>
+                <div class="rec-header">▶ MARKET OUTLOOK</div>
                 <div style="font-size: 14px; font-weight: bold; color: #FFFF00; margin-bottom: 6px; letter-spacing: 1px;" id="rec-outlook">LOADING...</div>
                 <div style="font-size: 9px; color: #888; line-height: 1.5;" id="rec-outlook-detail">Fetching data...</div>
             </div>
         </div>
 
-        <!-- AI Signal Panel -->
-        <section class="ai-signal-section">
+        </div><!-- /advancedSection -->
 
-          <div class="ai-panel-header">
-            <span class="ai-panel-title">⬡ AI Signal Panel</span>
-            <span class="ai-panel-ts" id="aiPanelTS">—</span>
-          </div>
+        <!-- AI Panel -->
+        <section class="energy-ai-panel">
 
-          <div class="sig-grid">
-            <div class="sig-card" id="aiRegimeCard">
-              <div class="sc-label">Market Regime</div>
-              <div id="aiRegimeBadge" class="rg-badge rg-chop">LOADING</div>
-              <div id="aiRegimeText" class="sc-sub"></div>
+          <div class="energy-grid">
+            <div class="panel-card">
+              <div class="panel-label">Market Regime</div>
+              <div id="regimeBadge" class="signal-badge badge-neutral">--</div>
+              <div id="regimeText" class="panel-subtext"></div>
             </div>
-            <div class="sig-card" id="aiSignalCard">
-              <div class="sc-label">Primary Signal</div>
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-                <span id="aiSignalBadge" class="ss-badge ss-none">--</span>
-                <span id="aiSignalTicker" style="font-size:18px;font-weight:bold;color:#94a3b8;">---</span>
+
+            <div class="panel-card">
+              <div class="panel-label">Signal</div>
+              <div class="signal-row">
+                <span id="signalBadge" class="signal-badge badge-neutral">--</span>
+                <span id="signalTicker" class="signal-ticker">---</span>
               </div>
-              <div id="aiSignalSummary" class="sc-sub"></div>
+              <div id="signalSummary" class="panel-subtext"></div>
             </div>
-            <div class="sig-card" id="aiConfCard">
-              <div class="sc-label">Confidence</div>
-              <div id="aiConfValue" class="sc-big">--</div>
-              <div id="aiConfSub" class="sc-sub"></div>
-              <div class="conf-bar-wrap"><div id="aiConfBar" class="conf-bar-fill"></div></div>
+
+            <div class="panel-card">
+              <div class="panel-label">Confidence</div>
+              <div id="confidenceValue" class="metric-big">--</div>
+              <div id="scoreText"></div>
             </div>
-            <div class="sig-card" id="aiPosCard">
-              <div class="sc-label">Position Status</div>
-              <div id="aiPositionText" class="sc-big" style="font-size:20px;">Flat</div>
-              <div id="aiPnlText" class="sc-sub"></div>
+
+            <div class="panel-card">
+              <div class="panel-label">Position</div>
+              <div id="positionText" class="metric-big">Flat</div>
+              <div id="pnlText"></div>
             </div>
           </div>
 
-          <div class="analysis-grid">
-            <div class="sig-card">
-              <div class="sc-label">Analysis</div>
-              <div id="aiReasonText" class="sc-sub" style="line-height:1.7;font-size:12px;"></div>
+          <div class="energy-grid second-row">
+            <div class="panel-card">
+              <div class="panel-label">Reason</div>
+              <div id="reasonText"></div>
             </div>
-            <div class="sig-card">
-              <div class="sc-label">Trigger / Invalidation</div>
-              <div id="aiTriggerText" class="sc-sub" style="margin-bottom:8px;font-size:12px;"></div>
-              <div id="aiInvalidText" class="sc-sub" style="color:#f87171;font-size:12px;"></div>
+
+            <div class="panel-card">
+              <div class="panel-label">Trigger / Invalidation</div>
+              <div id="triggerText"></div>
+              <div id="invalidationText"></div>
             </div>
           </div>
 
-          <div class="tp-card">
-            <div class="sc-label">Trade Plan</div>
-            <div class="tp-grid4">
-              <div class="tp-box"><div class="tp-lbl">Entry</div><div id="aiEntry" class="tp-val">—</div></div>
-              <div class="tp-box"><div class="tp-lbl">Stop Loss</div><div id="aiStop" class="tp-val" style="color:#f87171;">—</div></div>
-              <div class="tp-box"><div class="tp-lbl">Target 1</div><div id="aiT1" class="tp-val" style="color:#4ade80;">—</div></div>
-              <div class="tp-box"><div class="tp-lbl">Target 2</div><div id="aiT2" class="tp-val" style="color:#34d399;">—</div></div>
+          <div class="panel-card">
+            <div class="panel-label">Trade Plan</div>
+            <div class="trade-plan-grid">
+              <div class="plan-box"><div id="entryText"></div></div>
+              <div class="plan-box"><div id="stopText"></div></div>
+              <div class="plan-box"><div id="target1Text"></div></div>
+              <div class="plan-box"><div id="target2Text"></div></div>
             </div>
           </div>
 
         </section>
 
-        <!-- Alerts Panel -->
-        <div class="alerts-panel" id="alertsPanel">
-          <div class="alerts-header">
-            <span class="alerts-title">⚡ LIVE ALERTS</span>
-            <span class="alerts-count" id="alertsCount">0 alerts</span>
-            <button class="alerts-clear" onclick="clearAlerts()">Clear</button>
-          </div>
-          <div class="alerts-feed" id="alertsFeed">
-            <div class="alerts-empty">No alerts yet — waiting for data...</div>
-          </div>
-        </div>
-
         <!-- Signal Checklist Card -->
         <div class="checklist-card" id="signalChecklist">
+          <!-- Stage Strip — main decision output -->
+          <div class="stage-strip">
+            <span class="stage-badge-big notrade" id="stageBadgeBig">— LOADING —</span>
+            <span class="stage-action" id="stageAction">Waiting for data...</span>
+          </div>
           <div class="checklist-header">
             <span class="checklist-title">SIGNAL CHECKLIST</span>
             <span class="checklist-score-badge" id="checklistBadge">—</span>
@@ -1211,7 +1179,7 @@
 
         <!-- My Portfolio -->
         <div class="portfolio-section">
-            <div class="portfolio-title">MY PORTFOLIO â TRACK YOUR POSITIONS</div>
+            <div class="portfolio-title">MY PORTFOLIO — TRACK YOUR POSITIONS</div>
             <div class="portfolio-form">
                 <div class="port-field">
                     <span class="port-label">TICKER</span>
@@ -1261,7 +1229,7 @@
             <div class="portfolio-totals" id="portfolio-totals"></div>
         </div>
 
-                <!-- ── Profit Plan ── -->
+        <!-- ── Profit Plan ── -->
         <div class="profit-plan-section" id="profitPlanSection">
             <div class="profit-plan-title">⚡ PROFIT PLAN — STAGED EXITS (LEVERAGED ETF)</div>
             <div id="profitPlanCards" class="profit-plan-cards">
@@ -1298,9 +1266,9 @@
                 <div style="color: #00FFFF; font-size: 10px; font-weight: bold;">Correlation Status</div>
                 <div id="correlation-status" style="color: #00FF41; font-size: 11px; font-weight: bold; margin-top: 4px;">CONFIRMED</div>
                 <div style="font-size: 8px; color: #666; border-top: 1px solid #333; padding-top: 6px; margin-top: 8px;">
-                    <div style="margin-bottom: 4px;"><span style="color: #00FFFF;">WTIâGUSH:</span> 0.870</div>
-                    <div style="margin-bottom: 4px;"><span style="color: #00FFFF;">WTIâDRIP:</span> -0.850</div>
-                    <div><span style="color: #00FFFF;">XOPâGUSH:</span> 0.920</div>
+                    <div style="margin-bottom: 4px;"><span style="color: #00FFFF;">WTI↔GUSH:</span> 0.870</div>
+                    <div style="margin-bottom: 4px;"><span style="color: #00FFFF;">WTI↔DRIP:</span> -0.850</div>
+                    <div><span style="color: #00FFFF;">XOP↔GUSH:</span> 0.920</div>
                 </div>
             </div>
 
@@ -1363,12 +1331,12 @@
             </div>
         </div>
 
+        <!-- Price Chart -->
         <div class="tf-toggle-group" id="tfToggle">
           <button class="tf-btn active" data-tf="1D">1D</button>
           <button class="tf-btn" data-tf="5D">5D</button>
           <button class="tf-btn" data-tf="30D">30D</button>
         </div>
-        <!-- Price Chart -->
         <div class="chart-container">
             <div class="chart-title" id="chartTitle">PRICE CHART - 1D INTRADAY</div>
             <canvas id="priceChart" class="chart-canvas"></canvas>
@@ -1392,7 +1360,7 @@
 
         <!-- Footer -->
         <div class="footer">
-            <span>POLYGON.IO LIVE DATA | Â© 2026 ENERGY DERIVATIVES TERMINAL | <span class="footer-ric">RIC: GUSH.N / DRIP.N / XOP.O / USO.N</span></span>
+            <span>POLYGON.IO LIVE DATA | © 2026 ENERGY DERIVATIVES TERMINAL | <span class="footer-ric">RIC: GUSH.N / DRIP.N / XOP.O / USO.N</span></span>
         </div>
     </div>
 
@@ -1419,7 +1387,7 @@
         let aggregateDataRef = {};
         let previousCloseRef = {};
 
-        // âââ PORTFOLIO âââââââââââââââââââââââââââââââââââââââââââââââ
+        // ─── PORTFOLIO ───────────────────────────────────────────────
         let portfolio = {};
         try { portfolio = JSON.parse(localStorage.getItem('energyPortfolio') || '{}'); } catch(e) {}
         let prevSignals = { GUSH: null, DRIP: null };
@@ -1429,7 +1397,7 @@
             try { localStorage.setItem('energyPortfolio', JSON.stringify(portfolio)); } catch(e) {}
         }
 
-                // ─── PROFIT PLAN ─────────────────────────────────────────────
+        // ─── PROFIT PLAN ─────────────────────────────────────────────
         const PP_STAGES = [
             { pct:  4, trim: '25%',    action: 'Trim 25% of position' },
             { pct:  8, trim: '25%',    action: 'Trim 25% → move stop to breakeven' },
@@ -1449,15 +1417,16 @@
             profitPlan[ticker][idx] = nowDone;
             saveProfitPlan();
             updateProfitPlan();
+            // Fire Discord alert when marking a stage as trimmed (not when un-marking)
             if (nowDone && typeof window.sendDiscordAlert === 'function') {
                 const s = PP_STAGES[idx];
                 const px = (state.prices || {})[ticker] || 0;
                 const pos = portfolio[ticker];
                 const pnlPct = pos && pos.avgCost > 0 ? ((px - pos.avgCost) / pos.avgCost * 100) : 0;
                 const ma9 = ((state.movingAverages || {})[ticker] || {}).MA9 || 0;
-                const stopNotes = ['Hold entry stop', 'Move stop to breakeven', 'Trail stop under MA9 ($' + (ma9 > 0 ? ma9.toFixed(2) : '—') + ')', 'Manage runner'];
+                const stopNotes = ['Entry stop', 'Move stop to breakeven', 'Trail stop under MA9 ($' + (ma9 > 0 ? ma9.toFixed(2) : '—') + ')', 'Manage runner'];
                 window.sendDiscordAlert({ embeds: [{
-                    title: '💸 PROFIT TRIM — ' + ticker + ' +' + s.pct + '%',
+                    title: '\uD83D\uDCB8 PROFIT TRIM — ' + ticker + ' +' + s.pct + '%',
                     description: '**Action:** ' + s.action + '\n**Price:** $' + (px > 0 ? px.toFixed(2) : '—') + '\n**P&L:** +' + pnlPct.toFixed(2) + '%',
                     color: 65280,
                     fields: [
@@ -1489,15 +1458,15 @@
             for (const ticker of tickers) {
                 const pos  = portfolio[ticker];
                 const px   = state.prices[ticker];
-                const ma9  = (state.movingAverages[ticker] || {}).MI9 || 0;
+                const ma9  = (state.movingAverages[ticker] || {}).MA9 || 0;
                 const pnlPct = pos.avgCost > 0 ? ((px - pos.avgCost) / pos.avgCost) * 100 : 0;
                 const pnlCls = pnlPct >= 0 ? 'up' : 'down';
                 const pnlSign = pnlPct >= 0 ? '+' : '';
                 if (!profitPlan[ticker]) profitPlan[ticker] = [false,false,false,false];
                 const done = profitPlan[ticker];
-
+                
                 // Next incomplete stage
-                let nextIdx = done.findIndex(v => !v);
+                let nextIdx = done.findIndex(v=> !v);
 
                 // Stop label
                 let stopLabel = `Entry $${pos.avgCost.toFixed(2)}`;
@@ -1505,7 +1474,7 @@
                 if (done[1]) { stopLabel = `Breakeven $${pos.avgCost.toFixed(2)}`; stopCls = 'be'; }
                 if (done[2] && ma9 > 0) { stopLabel = `MA9 trail $${ma9.toFixed(2)}`; stopCls = 'be'; }
 
-                // Progress %: 0 →+18% range
+                // Progress %: 0→+18% range
                 const prog = Math.min(100, Math.max(0, (pnlPct / 18) * 100));
 
                 // Stage rows
@@ -1515,8 +1484,8 @@
                     const isDone  = done[i];
                     const isNext  = i === nextIdx;
                     const cls     = isDone ? 'hit' : (isNext ? 'next' : 'pending');
-                    const icon    = isDone ? '⛓' : (reached ? '◉' : '○');
-                    const btnTxt  = isDone ? '✑ DONE' : (reached ? 'TRIM ▸' : '—');
+                    const icon    = isDone ? '✓' : (reached ? '◉' : '○');
+                    const btnTxt  = isDone ? '✓ DONE' : (reached ? 'TRIM ▸' : '—');
                     stageRows += `
                     <div class="pp-stage ${cls}">
                         <span class="pp-stage-icon">${icon}</span>
@@ -1528,8 +1497,8 @@
 
                 // Next action line
                 const nextLine = nextIdx < 0
-                    ? `<div class="pp-done-label">✑ ALL STAGES COMPLETE — manage final runner</div>`
-                    : `<div class="pp-next-label">NEXT → +${PP_STAGES[nextIdx].pct}% : ${PPESTAGES[nextIdx].action}</div>`;
+                    ? `<div class="pp-done-label">✓ ALL STAGES COMPLETE — manage final runner</div>`
+                    : `<div class="pp-next-label">NEXT → +${PP_STAGES[nextIdx].pct}% : ${PP_STAGES[nextIdx].action}</div>`;
 
                 html += `
                 <div class="profit-plan-card">
@@ -1540,7 +1509,7 @@
                     </div>
                     <div class="pp-progress-wrap">
                         <div class="pp-progress-marks">
-                            ${PPESTAGES.map(s=>`<span class="pp-progress-mark" style="left:${(s.pct/18*100).toFixed(1)}%">+${s.pct}%</span>`).join('')}
+                            ${PP_STAGES.map(s=>`<span class="pp-progress-mark" style="left:${(s.pct/18*100).toFixed(1)}%">+${s.pct}%</span>`).join('')}
                         </div>
                         <div class="pp-progress"><div class="pp-progress-fill" style="width:${prog.toFixed(1)}%"></div></div>
                     </div>
@@ -1555,7 +1524,7 @@
             container.innerHTML = html;
         }
 
-function addPosition() {
+        function addPosition() {
             const ticker = document.getElementById('port-ticker').value;
             const shares = parseFloat(document.getElementById('port-shares').value);
             const cost   = parseFloat(document.getElementById('port-cost').value);
@@ -1572,17 +1541,19 @@ function addPosition() {
 
         function removePosition(ticker) {
             delete portfolio[ticker];
+            delete profitPlan[ticker];
             savePortfolio();
+            saveProfitPlan();
             updatePortfolioDisplay();
             updateProfitPlan();
-            updateSignalChecklist();
         }
 
         function clearPortfolio() {
-            portfolio = {}; profitPlan = {};
-            savePortfolio(); saveProfitPlan();
+            portfolio = {};
+            profitPlan = {};
+            savePortfolio();
+            saveProfitPlan();
             updatePortfolioDisplay();
-            updateProfitPlan();
         }
 
         function getPortfolioAction(ticker, currentPrice, avgCost, signal, confidence) {
@@ -1590,14 +1561,14 @@ function addPosition() {
             if (pnlPct <= -15)
                 return { action: 'SELL', cls: 'sell', reason: `Stop-loss triggered: down ${pnlPct.toFixed(1)}%` };
             if (signal === 'SELL')
-                return { action: 'SELL', cls: 'sell', reason: `SELL signal Â· ${confidence}% conf Â· consider exiting` };
+                return { action: 'SELL', cls: 'sell', reason: `SELL signal · ${confidence}% conf · consider exiting` };
             if (signal === 'BUY' && confidence > 50) {
-                if (pnlPct >= 30) return { action: 'TRAIL STOP', cls: 'hold', reason: `Up ${pnlPct.toFixed(1)}% â lock in gains` };
-                return { action: 'ADD MORE', cls: 'add', reason: `Strong BUY signal Â· ${confidence}% conf` };
+                if (pnlPct >= 30) return { action: 'TRAIL STOP', cls: 'hold', reason: `Up ${pnlPct.toFixed(1)}% — lock in gains` };
+                return { action: 'ADD MORE', cls: 'add', reason: `Strong BUY signal · ${confidence}% conf` };
             }
             if (pnlPct >= 30 && signal !== 'BUY')
-                return { action: 'TAKE PROFITS', cls: 'sell', reason: `Up ${pnlPct.toFixed(1)}% â trim position` };
-            return { action: 'HOLD', cls: 'hold', reason: `Signal: HOLD Â· ${confidence}% conf` };
+                return { action: 'TAKE PROFITS', cls: 'sell', reason: `Up ${pnlPct.toFixed(1)}% — trim position` };
+            return { action: 'HOLD', cls: 'hold', reason: `Signal: HOLD · ${confidence}% conf` };
         }
 
         function updatePortfolioDisplay() {
@@ -1633,7 +1604,7 @@ function addPosition() {
                     <td class="${pnlClass}">${pnlDollar >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%</td>
                     <td class="portfolio-action-${pa.cls}">${pa.action}</td>
                     <td style="color:#888;font-size:9px;">${pa.reason}</td>
-                    <td><span style="cursor:pointer;color:#555;font-size:11px;" onclick="removePosition('${ticker}')">â</span></td>
+                    <td><span style="cursor:pointer;color:#555;font-size:11px;" onclick="removePosition('${ticker}')">✕</span></td>
                 </tr>`;
             }
             tbody.innerHTML = rows;
@@ -1647,10 +1618,10 @@ function addPosition() {
             `;
         }
 
-        // âââ ALERTS ââââââââââââââââââââââââââââââââââââââââââââââââââ
+        // ─── ALERTS ──────────────────────────────────────────────────
         function showAlert(msg, type) {
             const banner = document.getElementById('alertBanner');
-            banner.textContent = 'â   ' + msg;
+            banner.textContent = '⚠  ' + msg;
             banner.style.display = 'block';
             const colors = { sell: '#CC0000', buy: '#006622', info: '#003A7A' };
             banner.style.background = colors[type] || colors.sell;
@@ -1666,9 +1637,9 @@ function addPosition() {
             Notification.requestPermission().then(perm => {
                 notificationsEnabled = perm === 'granted';
                 const btn = document.getElementById('notifBtn');
-                btn.textContent  = notificationsEnabled ? 'ð ALERTS ON' : 'ð ALERTS OFF';
+                btn.textContent  = notificationsEnabled ? '🔔 ALERTS ON' : '🔕 ALERTS OFF';
                 btn.className    = 'notif-btn' + (notificationsEnabled ? ' active' : '');
-                if (notificationsEnabled) showAlert('Alerts enabled â you will be notified on signal changes.', 'info');
+                if (notificationsEnabled) showAlert('Alerts enabled — you will be notified on signal changes.', 'info');
             });
         }
 
@@ -1676,14 +1647,14 @@ function addPosition() {
             const gs = state.signals.GUSH;
             const ds = state.signals.DRIP;
             if (prevSignals.GUSH !== null && prevSignals.GUSH !== gs.signal) {
-                if (gs.signal === 'BUY')  showAlert(`GUSH â BUY SIGNAL  (${gs.confidence}% confidence)`, 'buy');
-                if (gs.signal === 'SELL') showAlert(`GUSH â SELL SIGNAL  (${gs.confidence}% confidence)`, 'sell');
-                addSignalLog(gs.signal, `GUSH signal changed: ${prevSignals.GUSH} â ${gs.signal}`);
+                if (gs.signal === 'BUY')  showAlert(`GUSH ➜ BUY SIGNAL  (${gs.confidence}% confidence)`, 'buy');
+                if (gs.signal === 'SELL') showAlert(`GUSH ➜ SELL SIGNAL  (${gs.confidence}% confidence)`, 'sell');
+                addSignalLog(gs.signal, `GUSH signal changed: ${prevSignals.GUSH} → ${gs.signal}`);
             }
             if (prevSignals.DRIP !== null && prevSignals.DRIP !== ds.signal) {
-                if (ds.signal === 'BUY')  showAlert(`DRIP â BUY SIGNAL  (${ds.confidence}% confidence)`, 'buy');
-                if (ds.signal === 'SELL') showAlert(`DRIP â SELL SIGNAL  (${ds.confidence}% confidence)`, 'sell');
-                addSignalLog(ds.signal, `DRIP signal changed: ${prevSignals.DRIP} â ${ds.signal}`);
+                if (ds.signal === 'BUY')  showAlert(`DRIP ➜ BUY SIGNAL  (${ds.confidence}% confidence)`, 'buy');
+                if (ds.signal === 'SELL') showAlert(`DRIP ➜ SELL SIGNAL  (${ds.confidence}% confidence)`, 'sell');
+                addSignalLog(ds.signal, `DRIP signal changed: ${prevSignals.DRIP} → ${ds.signal}`);
             }
             for (const ticker of ['GUSH', 'DRIP', 'XOP', 'USO']) {
                 const pos = portfolio[ticker];
@@ -1696,14 +1667,14 @@ function addPosition() {
             prevSignals.DRIP = ds.signal;
         }
 
-        // âââ RECOMMENDATIONS âââââââââââââââââââââââââââââââââââââââââ
+        // ─── RECOMMENDATIONS ─────────────────────────────────────────
         function updateRecommendations() {
             const gs   = state.signals.GUSH || { signal: 'HOLD', confidence: 0, score: 50 };
             const ds   = state.signals.DRIP || { signal: 'HOLD', confidence: 0, score: 50 };
             const rsi  = state.technicalIndicators;
             const geo  = state.geoRisk;
             const gP   = state.prices.GUSH || 0;
-            const dP   = state.prices.DRIP || 0;
+            const dP  = state.prices.DRIP || 0;
 
             // GUSH panel
             const gushPos  = portfolio['GUSH'];
@@ -1713,13 +1684,13 @@ function addPosition() {
                 const pa  = getPortfolioAction('GUSH', gP, gushPos.avgCost, gs.signal, gs.confidence);
                 gText    = pa.action;
                 gClass   = pa.cls;
-                gReason  = `You own ${gushPos.shares} shares @ $${gushPos.avgCost.toFixed(2)} Â· P&L: ${pnl >= 0 ? '+' : ''}${pnl.toFixed(1)}%`;
+                gReason  = `You own ${gushPos.shares} shares @ $${gushPos.avgCost.toFixed(2)} · P&L: ${pnl >= 0 ? '+' : ''}${pnl.toFixed(1)}%`;
                 gLevels  = `Target: $${(gP * 1.20).toFixed(2)} (+20%) | Stop-loss: $${(gushPos.avgCost * 0.85).toFixed(2)} (-15%)`;
             } else {
                 gText   = gs.signal;
                 gClass  = gs.signal.toLowerCase();
-                gReason = `Score ${gs.score}/100 Â· RSI ${(rsi.GUSH?.RSI||0).toFixed(0)} Â· Geo ${geo} Â· ${gs.confidence}% conf`;
-                gLevels = gP > 0 ? `Entry: $${gP.toFixed(2)} Â· Target: $${(gP*1.20).toFixed(2)} Â· Stop: $${(gP*0.85).toFixed(2)}` : 'Awaiting price...';
+                gReason = `Score ${gs.score}/100 · RSI ${(rsi.GUSH?.RSI||0).toFixed(0)} · Geo ${geo} · ${gs.confidence}% conf`;
+                gLevels = gP > 0 ? `Entry: $${gP.toFixed(2)} · Target: $${(gP*1.20).toFixed(2)} · Stop: $${(gP*0.85).toFixed(2)}` : 'Awaiting price...';
             }
             const gEl = document.getElementById('rec-gush-action');
             gEl.textContent = gText; gEl.className = 'rec-action signal-' + gClass;
@@ -1734,13 +1705,13 @@ function addPosition() {
                 const pa  = getPortfolioAction('DRIP', dP, dripPos.avgCost, ds.signal, ds.confidence);
                 dText    = pa.action;
                 dClass   = pa.cls;
-                dReason  = `You own ${dripPos.shares} shares @ $${dripPos.avgCost.toFixed(2)} Â· P&L: ${pnl >= 0 ? '+' : ''}${pnl.toFixed(1)}%`;
+                dReason  = `You own ${dripPos.shares} shares @ $${dripPos.avgCost.toFixed(2)} · P&L: ${pnl >= 0 ? '+' : ''}${pnl.toFixed(1)}%`;
                 dLevels  = `Target: $${(dP * 1.20).toFixed(2)} (+20%) | Stop-loss: $${(dripPos.avgCost * 0.85).toFixed(2)} (-15%)`;
             } else {
                 dText   = ds.signal;
                 dClass  = ds.signal.toLowerCase();
-                dReason = `Score ${ds.score}/100 Â· RSI ${(rsi.DRIP?.RSI||0).toFixed(0)} Â· Geo ${geo} Â· ${ds.confidence}% conf`;
-                dLevels = dP > 0 ? `Entry: $${dP.toFixed(2)} Â· Target: $${(dP*1.20).toFixed(2)} Â· Stop: $${(dP*0.85).toFixed(2)}` : 'Awaiting price...';
+                dReason = `Score ${ds.score}/100 · RSI ${(rsi.DRIP?.RSI||0).toFixed(0)} · Geo ${geo} · ${ds.confidence}% conf`;
+                dLevels = dP > 0 ? `Entry: $${dP.toFixed(2)} · Target: $${(dP*1.20).toFixed(2)} · Stop: $${(dP*0.85).toFixed(2)}` : 'Awaiting price...';
             }
             const dEl = document.getElementById('rec-drip-action');
             dEl.textContent = dText; dEl.className = 'rec-action signal-' + dClass;
@@ -1753,17 +1724,17 @@ function addPosition() {
             const outEl  = document.getElementById('rec-outlook');
             const detEl  = document.getElementById('rec-outlook-detail');
             if (gs.signal === 'BUY' && wtiRSI > 55) {
-                outEl.textContent = 'ð  BULLISH ON OIL';
+                outEl.textContent = '📈  BULLISH ON OIL';
                 outEl.style.color = '#00FF41';
                 detEl.textContent = `WTI momentum strong (RSI ${wtiRSI.toFixed(0)}), XOP confirming (RSI ${xopRSI.toFixed(0)}). Geo risk ${geo}/100. Favor GUSH over DRIP. Consider adding to winners.`;
             } else if (ds.signal === 'BUY' || wtiRSI < 45) {
-                outEl.textContent = 'ð  BEARISH ON OIL';
+                outEl.textContent = '📉  BEARISH ON OIL';
                 outEl.style.color = '#FF3131';
                 detEl.textContent = `WTI weakening (RSI ${wtiRSI.toFixed(0)}), downside pressure building. Geo risk ${geo}/100. DRIP may outperform. Consider trimming GUSH positions.`;
             } else {
-                outEl.textContent = 'â¡  NEUTRAL / WATCH';
+                outEl.textContent = '➡  NEUTRAL / WATCH';
                 outEl.style.color = '#FFFF00';
-                detEl.textContent = `Mixed signals â WTI RSI ${wtiRSI.toFixed(0)}, XOP RSI ${xopRSI.toFixed(0)}, Geo ${geo}/100. Wait for confirmation before entering new positions.`;
+                detEl.textContent = `Mixed signals — WTI RSI ${wtiRSI.toFixed(0)}, XOP RSI ${xopRSI.toFixed(0)}, Geo ${geo}/100. Wait for confirmation before entering new positions.`;
             }
         }
 
@@ -1808,122 +1779,51 @@ function addPosition() {
 
         async function fetchAggregates(ticker) {
             try {
+                const today = new Date();
+                const startDate = new Date(today);
+                startDate.setDate(startDate.getDate() - 50);
+                const formatDate = (date) => date.toISOString().split('T')[0];
                 const response = await fetch(
-                    `https://corsproxy.io/?https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=3mo`
+                    `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${formatDate(startDate)}/${formatDate(today)}?adjusted=true&sort=asc&limit=50&apiKey=${POLYGON_API_KEY}`
                 );
-                if (!response.ok) return [];
+                if (!response.ok) return null;
                 const data = await response.json();
-                const result = data?.chart?.result?.[0];
-                if (!result) return [];
-                const timestamps = result.timestamp || [];
-                const quotes = result.indicators?.quote?.[0] || {};
-                return timestamps.map((t, i) => ({
-                    t: t * 1000,
-                    o: quotes.open?.[i] || 0,
-                    h: quotes.high?.[i] || 0,
-                    l: quotes.low?.[i] || 0,
-                    c: quotes.close?.[i] || 0,
-                    v: quotes.volume?.[i] || 0,
-                    vw: quotes.close?.[i] || 0
-                })).filter(bar => bar.c !== 0);
+                return data.results || [];
             } catch (error) {
                 console.error(`Error fetching aggregates for ${ticker}:`, error);
-                return [];
+                return null;
             }
         }
 
         async function fetchPreviousClose(ticker) {
             try {
                 const response = await fetch(
-                    `https://corsproxy.io/?https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=5d`
+                    `https://api.polygon.io/v2/aggs/ticker/${ticker}/prev?adjusted=true&apiKey=${POLYGON_API_KEY}`
                 );
                 if (!response.ok) return null;
                 const data = await response.json();
-                const meta = data?.chart?.result?.[0]?.meta;
-                if (!meta) return null;
-                const prev = meta.chartPreviousClose || meta.previousClose || meta.regularMarketPrice || 0;
-                return { c: prev, o: prev, h: prev, l: prev, v: 0, vw: prev };
+                return data.results?.[0] || null;
             } catch (error) {
                 console.error(`Error fetching previous close for ${ticker}:`, error);
                 return null;
             }
         }
 
-        // ── Data Safety Helpers ────────────────────────────────────────
-        function isValidNumber(val) {
-            return typeof val === 'number' && isFinite(val) && val > 0;
-        }
-
-        function safeSetText(elementId, value, opts) {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-            opts = opts || {};
-            if (!isValidNumber(value)) {
-                el.textContent = opts.fallback || '—';
-                el.classList.add('data-unavailable');
-                return;
-            }
-            el.classList.remove('data-unavailable');
-            const decimals = opts.decimals !== undefined ? opts.decimals : 2;
-            el.textContent = (opts.prefix || '') + value.toFixed(decimals) + (opts.suffix || '');
-        }
-
-        let liveDataOk = false;
-
-        function setLiveDataOk(ok) {
-            liveDataOk = ok;
-            const signalEls = document.querySelectorAll('.signal-action, #aiSignalBadge, #aiRegimeBadge');
-            signalEls.forEach(el => {
-                if (!ok) { el.classList.add('signal-blocked'); }
-                else { el.classList.remove('signal-blocked'); }
-            });
-        }
-
-                async function fetchSnapshot(ticker) {
-            console.log('[fetch:start]', ticker);
+        async function fetchSnapshot(ticker) {
             try {
-                const proxy = 'https://corsproxy.io/?url=';
-                const url = proxy + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=1d&range=1d');
-                const response = await fetch(url);
-                console.log('[fetch:response]', ticker, response.status, response.ok ? 'OK' : 'FAIL');
+                const response = await fetch(
+                    `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers/${ticker}?apiKey=${POLYGON_API_KEY}`
+                );
                 if (!response.ok) return null;
                 const data = await response.json();
-                const result = data.chart?.result?.[0];
-                if (!result) { console.error('[fetch:no-result]', ticker); return null; }
-                const meta = result.meta;
-                const price = meta.regularMarketPrice;
-                const prevClose = meta.previousClose || meta.chartPreviousClose;
-                console.log('[fetch:parsed]', ticker, 'price:', price, 'prev:', prevClose);
-                if (!isValidNumber(price)) { console.warn('[fetch:invalid]', ticker, price); return null; }
-                return {
-                    lastTrade: { p: price },
-                    prevClose: prevClose,
-                    day: {
-                        h: meta.regularMarketDayHigh || price,
-                        l: meta.regularMarketDayLow  || price,
-                        v: meta.regularMarketVolume  || 0
-                    }
-                };
+                return data.results || null;
             } catch (error) {
-                console.error('[fetch:exception]', ticker, error.message);
+                console.error(`Error fetching snapshot for ${ticker}:`, error);
                 return null;
             }
         }
 
-        function dataIsReady() {
-            return ['GUSH','DRIP','XOP','USO'].some(t => (state.prices[t] || 0) > 0);
-        }
-
         async function initializeData() {
-            state.dataStatus = 'LOADING';
-            setLiveDataOk(false);
-            ['GUSH','DRIP','XOP','USO'].forEach(t => {
-                const el = document.getElementById('price-' + t);
-                if (el) { el.textContent = '···'; el.classList.add('loading-shimmer'); }
-            });
-            console.log('[init:start]');
-            updateUI();
-            console.log('[init] Starting data initialization...');
             state.dataStatus = "LOADING...";
             updateStatus();
 
@@ -1947,10 +1847,7 @@ function addPosition() {
 
                 for (const ticker of TICKERS) {
                     const aggs = aggregatesData[ticker];
-                    if (!aggs || aggs.length < 14) {
-                        console.warn('Not enough data for indicators on ' + ticker);
-                        continue;
-                    }
+                    if (!aggs || aggs.length === 0) continue;
 
                     const closes = aggs.map(bar => bar.c);
                     const rsi = calculateRSI(closes, 14);
@@ -1988,14 +1885,8 @@ function addPosition() {
                         };
                     }
                 }
-                const validPriceCount = TICKERS.filter(t => state.prices[t] && state.prices[t] > 0).length;
-                ['GUSH','DRIP','XOP','USO'].forEach(t => {
-                    const el = document.getElementById('price-' + t);
-                    if (el) el.classList.remove('loading-shimmer');
-                });
-                setLiveDataOk(validPriceCount >= 2);
-                console.log('[init:complete] validPrices:', validPriceCount);
-                state.dataStatus = validPriceCount >= 2 ? "LIVE" : "ERROR";
+
+                state.dataStatus = "LIVE";
                 updateStatus();
                 updateUI();
                 updateChart();
@@ -2007,22 +1898,23 @@ function addPosition() {
         }
 
         async function updateSnapshots() {
-            if (!['LIVE','STALE','LOADING'].includes(state.dataStatus)) return;
+            if (state.dataStatus !== "LIVE" && state.dataStatus !== "STALE") return;
 
             let successCount = 0;
             for (let i = 0; i < TICKERS.length; i++) {
                 const ticker = TICKERS[i];
-                await new Promise(resolve => setTimeout(resolve, i * 300));
+                await new Promise(resolve => setTimeout(resolve, i * 250));
 
                 const snapshot = await fetchSnapshot(ticker);
-                if (snapshot && snapshot.lastTrade && snapshot.lastTrade.p) {
+                if (snapshot && snapshot.lastTrade) {
                     const currentPrice = snapshot.lastTrade.p;
+                    const prevClose = previousCloseRef[ticker];
+
                     state.prices[ticker] = currentPrice;
 
-                    const prevClose = snapshot.prevClose || (previousCloseRef[ticker] && previousCloseRef[ticker].c);
                     if (prevClose) {
-                        const dollarChange = currentPrice - prevClose;
-                        const percentChange = (dollarChange / prevClose) * 100;
+                        const dollarChange = currentPrice - prevClose.c;
+                        const percentChange = (dollarChange / prevClose.c) * 100;
                         state.changes[ticker] = {
                             dollar: parseFloat(dollarChange.toFixed(2)),
                             percent: parseFloat(percentChange.toFixed(2))
@@ -2036,86 +1928,212 @@ function addPosition() {
                         };
                         state.volumes[ticker] = snapshot.day.v || 0;
                     }
+
                     successCount++;
                 }
             }
 
             state.lastUpdateTime = new Date().toLocaleTimeString();
-            state.dataStatus = successCount > 0 ? "LIVE" : "STALE";
+            state.dataStatus = successCount === TICKERS.length ? "LIVE" : "STALE";
             updateUI();
             updateChart();
             calculateSignals();
         }
 
-        function updateSignalChecklist() {
-          if (state.dataStatus !== 'LIVE' && state.dataStatus !== 'STALE') return;
+        function getSignalStage(ticker) {
           const prices = state.prices || {};
           const mas    = state.movingAverages || {};
           const ti     = state.technicalIndicators || {};
+
+          const usoPrice = prices.USO || 0;
+          const xopPrice = prices.XOP || 0;
+          const usoMA9   = mas.USO?.MA9 || 0;
+          const xopMA9   = mas.XOP?.MA9 || 0;
+
+          const bullishRegime = usoMA9 && xopMA9 && usoPrice > usoMA9 && xopPrice > xopMA9;
+          const bearishRegime = usoMA9 && xopMA9 && usoPrice < usoMA9 && xopPrice < xopMA9;
+
+          const etfPrice = prices[ticker] || 0;
+          const etfMA9   = mas[ticker]?.MA9 || 0;
+          const etfBreak = etfMA9 > 0 && etfPrice > etfMA9;
+
+          const rsi    = ti[ticker]?.RSI  || 0;
+          const macd   = ti[ticker]?.MACD || 0;
+          const rsiOk  = rsi > 50;
+          const macdOk = macd > 0;
+
+          // CONFIRMED: ETF above MA9 + RSI > 50 + MACD positive
+          if (etfBreak && rsiOk && macdOk) return 'CONFIRMED';
+
+          // TRIGGERED: ETF broke its MA9 but momentum not fully aligned
+          if (etfBreak) return 'TRIGGERED';
+
+          // EARLY signals: regime aligned but ETF hasn't broken out yet
+          if (ticker === 'GUSH' && bullishRegime) return 'EARLY_BULLISH';
+          if (ticker === 'DRIP' && bearishRegime) return 'EARLY_BEARISH';
+
+          return 'NO_TRADE';
+        }
+
+        function toggleAdvanced() {
+          const sec = document.getElementById('advancedSection');
+          const btn = document.getElementById('advancedToggleBtn');
+          if (!sec) return;
+          const nowCollapsed = sec.classList.toggle('collapsed');
+          if (btn) btn.textContent = nowCollapsed
+            ? '▼ ADVANCED DETAILS — GUSH / DRIP SIGNALS'
+            : '▲ HIDE ADVANCED DETAILS';
+        }
+
+        function updateSignalChecklist() {
+          if (state.dataStatus !== 'LIVE' && state.dataStatus !== 'STALE') return;
+
+          const prices = state.prices || {};
+          const mas    = state.movingAverages || {};
+          const ti     = state.technicalIndicators || {};
+
           const usoPrice  = prices.USO  || 0;
           const xopPrice  = prices.XOP  || 0;
           const gushPrice = prices.GUSH || 0;
           const dripPrice = prices.DRIP || 0;
+
           const usoMA9  = mas.USO?.MA9  || 0;
           const xopMA9  = mas.XOP?.MA9  || 0;
           const gushMA9 = mas.GUSH?.MA9 || 0;
           const dripMA9 = mas.DRIP?.MA9 || 0;
-          const usoTrend = usoMA9 ? (usoPrice > usoMA9 ? 'UP' : 'DOWN') : null;
-          const xopTrend = xopMA9 ? (xopPrice > xopMA9 ? 'UP' : 'DOWN') : null;
-          const bullish  = usoTrend === 'UP'   && xopTrend === 'UP';
-          const bearish  = usoTrend === 'DOWN' && xopTrend === 'DOWN';
-          const etfTicker = bearish ? 'DRIP' : 'GUSH';
-          const etfPrice  = bearish ? dripPrice : gushPrice;
-          const etfMA9    = bearish ? dripMA9   : gushMA9;
-          const etfBreak  = etfMA9 ? etfPrice > etfMA9 : false;
-          const rsi = bearish ? (ti.DRIP?.RSI || 0) : (ti.GUSH?.RSI || 0);
+
+          const usoTrend   = usoMA9  ? (usoPrice  > usoMA9  ? 'UP'   : 'DOWN') : null;
+          const xopTrend   = xopMA9  ? (xopPrice  > xopMA9  ? 'UP'   : 'DOWN') : null;
+          const bullish    = usoTrend === 'UP'   && xopTrend === 'UP';
+          const bearish    = usoTrend === 'DOWN' && xopTrend === 'DOWN';
+
+          // Determine which ETF we're evaluating
+          const etfTicker  = bearish ? 'DRIP' : 'GUSH';
+          const etfPrice   = bearish ? dripPrice : gushPrice;
+          const etfMA9     = bearish ? dripMA9   : gushMA9;
+          const etfBreak   = etfMA9 ? etfPrice > etfMA9 : false;
+
+          // Momentum: use GUSH RSI for bullish, DRIP RSI for bearish
+          const rsi = bearish
+            ? (ti.DRIP?.RSI || 0)
+            : (ti.GUSH?.RSI || 0);
           const rsiPass = rsi > 50;
-          function setRow(id, pass, wait, detail) {
-            const row = document.getElementById('check-' + id);
-            const icon = document.getElementById('check-' + id + '-icon');
+
+          // Helper to set a row
+          function setRow(id, pass, wait, detail, statusText) {
+            const row      = document.getElementById('check-' + id);
+            const icon     = document.getElementById('check-' + id + '-icon');
             const detailEl = document.getElementById('check-' + id + '-detail');
             const statusEl = document.getElementById('check-' + id + '-status');
             if (!row) return;
+
             const cls = wait ? 'wait' : pass ? 'pass' : 'fail';
-            row.className = 'checklist-row ' + (wait ? '' : (pass ? 'pass' : 'fail'));
-            icon.className = 'check-icon ' + cls;
+            row.className   = 'checklist-row ' + (wait ? '' : (pass ? 'pass' : 'fail'));
+            icon.className  = 'check-icon ' + cls;
             icon.textContent = wait ? '○' : pass ? '✓' : '✗';
             if (detailEl) detailEl.textContent = detail;
-            if (statusEl) { statusEl.textContent = wait ? '' : pass ? 'PASS' : 'FAIL'; statusEl.className = 'check-status ' + cls; }
+            if (statusEl) {
+              statusEl.textContent = wait ? '' : pass ? 'PASS' : 'FAIL';
+              statusEl.className   = 'check-status ' + cls;
+            }
           }
+
           if (!usoMA9 || !xopMA9) {
-            setRow('oil', false, true, 'Waiting for MA data...');
-            setRow('xop', false, true, 'Waiting for MA data...');
-            setRow('etf', false, true, 'Waiting for MA data...');
-            setRow('momentum', false, true, 'Waiting for RSI...');
+            // No MA data yet
+            setRow('oil',      false, true, 'Waiting for MA data...', '');
+            setRow('xop',      false, true, 'Waiting for MA data...', '');
+            setRow('etf',      false, true, 'Waiting for MA data...', '');
+            setRow('momentum', false, true, 'Waiting for RSI...', '');
             return;
           }
-          const oilPass = bullish || bearish;
-          const oilDetail = bullish ? 'USO > MA9 (' + usoPrice.toFixed(2) + ' vs ' + usoMA9.toFixed(2) + ')' : bearish ? 'USO < MA9 (' + usoPrice.toFixed(2) + ' vs ' + usoMA9.toFixed(2) + ')' : 'USO mixed — no clear direction';
-          setRow('oil', oilPass, false, oilDetail);
-          const xopPass = bullish || bearish;
-          const xopDetail = bullish ? 'XOP > MA9 (' + xopPrice.toFixed(2) + ' vs ' + xopMA9.toFixed(2) + ')' : bearish ? 'XOP < MA9 (' + xopPrice.toFixed(2) + ' vs ' + xopMA9.toFixed(2) + ')' : 'XOP mixed — no confirmation';
-          setRow('xop', xopPass, false, xopDetail);
-          const etfDetail = etfMA9 ? etfTicker + (etfBreak ? ' > ' : ' < ') + 'MA9 (' + etfPrice.toFixed(2) + ' vs ' + etfMA9.toFixed(2) + ')' : 'No MA9 data for ' + etfTicker;
-          setRow('etf', etfBreak, !etfMA9, etfDetail);
-          const momDetail = rsi > 0 ? 'RSI ' + rsi.toFixed(1) + (rsiPass ? ' — momentum building' : ' — below 50, weak') : 'RSI not available';
-          setRow('momentum', rsiPass, rsi === 0, momDetail);
-          const score = [oilPass, xopPass, etfBreak, rsiPass].filter(Boolean).length;
-          const scoreEl = document.getElementById('checklistScore');
+
+          // Row 1 — Oil Direction
+          const oilPass   = bullish || bearish;
+          const oilDetail = bullish
+            ? 'USO > MA9 (' + usoPrice.toFixed(2) + ' vs ' + usoMA9.toFixed(2) + ')'
+            : bearish
+              ? 'USO < MA9 (' + usoPrice.toFixed(2) + ' vs ' + usoMA9.toFixed(2) + ')'
+              : 'USO mixed — no clear direction';
+          setRow('oil', oilPass, false, oilDetail, '');
+
+          // Row 2 — XOP Confirmation
+          const xopPass   = bullish || bearish;
+          const xopDetail = bullish
+            ? 'XOP > MA9 (' + xopPrice.toFixed(2) + ' vs ' + xopMA9.toFixed(2) + ')'
+            : bearish
+              ? 'XOP < MA9 (' + xopPrice.toFixed(2) + ' vs ' + xopMA9.toFixed(2) + ')'
+              : 'XOP mixed — no confirmation';
+          setRow('xop', xopPass, false, xopDetail, '');
+
+          // Row 3 — ETF Trigger
+          const etfDetail = etfMA9
+            ? etfTicker + (etfBreak ? ' > ' : ' < ') + 'MA9 (' + etfPrice.toFixed(2) + ' vs ' + etfMA9.toFixed(2) + ')'
+            : 'No MA9 data for ' + etfTicker;
+          setRow('etf', etfBreak, !etfMA9, etfDetail, '');
+
+          // Row 4 — Momentum
+          const momDetail = rsi > 0
+            ? 'RSI ' + rsi.toFixed(1) + (rsiPass ? ' — momentum building' : ' — below 50, weak')
+            : 'RSI not available';
+          setRow('momentum', rsiPass, rsi === 0, momDetail, '');
+
+          // Score
+          const checks = [oilPass, xopPass, etfBreak, rsiPass];
+          const score  = checks.filter(Boolean).length;
+
+          const scoreEl  = document.getElementById('checklistScore');
           const signalEl = document.getElementById('checklistSignal');
           const badgeEl  = document.getElementById('checklistBadge');
-          if (scoreEl) scoreEl.textContent = 'Score: ' + score + ' / 4';
-          let sigText = 'NO TRADE', sigCls = 'notrade';
-          if (score === 4) { sigText = 'BUY'; sigCls = 'buy'; }
-          else if (score === 3) { sigText = 'WATCHLIST'; sigCls = 'watch'; }
+
+          if (scoreEl)  scoreEl.textContent = 'Score: ' + score + ' / 4';
+
+          let sigText = 'NO TRADE';
+          let sigCls  = 'notrade';
+          if (score === 4)      { sigText = 'BUY';       sigCls = 'buy';   }
+          else if (score === 3) { sigText = 'WATCHLIST';  sigCls = 'watch'; }
+
           if (signalEl) { signalEl.textContent = sigText; signalEl.className = 'checklist-signal ' + sigCls; }
-          if (badgeEl)  { badgeEl.textContent = score + '/4'; badgeEl.className = 'checklist-score-badge ' + sigCls; }
+          if (badgeEl)  { badgeEl.textContent  = score + '/4'; badgeEl.className = 'checklist-score-badge ' + sigCls; }
+
+          // ── Stage strip update ──
+          const gushStage = getSignalStage('GUSH');
+          const dripStage = getSignalStage('DRIP');
+
+          // Prefer bearish ETF stage when market is bearish; otherwise default to GUSH
+          const dominant = bearish ? dripStage : gushStage;
+
+          const STAGE_LABELS = {
+            EARLY_BULLISH: '⚡ EARLY BULLISH WATCH',
+            EARLY_BEARISH: '⚡ EARLY BEARISH WATCH',
+            TRIGGERED:     '🔥 TRIGGERED',
+            CONFIRMED:     '✅ CONFIRMED',
+            NO_TRADE:      '— NO TRADE'
+          };
+          const STAGE_CLS = {
+            EARLY_BULLISH: 'early-bull',
+            EARLY_BEARISH: 'early-bear',
+            TRIGGERED:     'triggered',
+            CONFIRMED:     'confirmed',
+            NO_TRADE:      'notrade'
+          };
+          const STAGE_ACTIONS = {
+            EARLY_BULLISH: 'WATCHLIST — USO & XOP bullish. Wait for GUSH to break above MA8.',
+            EARLY_BEARISH: 'WATCHLIST — USO & XOP bearish. Wait for DRIP to break above MA9.',
+            TRIGGERED:     score >= 3 ? 'NEAR ENTRY — ETF triggered. Confirm momentum before sizing in.' : 'CAUTION — ETF triggered but momentum weak. Wait for RSI > 50.',
+            CONFIRMED:     score === 4 ? 'BUY — All 4 checks pass. Enter position, stop under MA9.' : 'BUY SIGNAL — 3/4 checks pass. Reduce size until full confirmation.',
+            NO_TRADE:      'STAND ASIDE — No clear directional edge. Keep cash.'
+          };
+
+          const stageBadgeEl  = document.getElementById('stageBadgeBig');
+          const stageActionEl = document.getElementById('stageAction');
+          if (stageBadgeEl) {
+            stageBadgeEl.textContent = STAGE_LABELS[dominant] || '— LOADING —';
+            stageBadgeEl.className   = 'stage-badge-big ' + (STAGE_CLS[dominant] || 'notrade');
+          }
+          if (stageActionEl) stageActionEl.textContent = STAGE_ACTIONS[dominant] || '';
         }
 
         function calculateSignals() {
-            if (!dataIsReady()) { console.warn('[signals] Skipping — no valid data yet'); return; }
-            if (!liveDataOk) { console.warn('[signals:blocked] liveDataOk false'); return; }
-            console.log('[signals:start]');
             const indicators = state.technicalIndicators;
             const geoRiskScore = state.geoRisk;
 
@@ -2172,28 +2190,8 @@ function addPosition() {
             updateRecommendations();
             checkAlerts();
             updatePortfolioDisplay();
-            // Auto-update AI Signal Panel
-            if (typeof updateAISignalPanel === 'function') {
-                const hist = state.priceHistory || [];
-                const rh = (t) => { const v=hist.slice(-5).map(b=>b&&b[t]).filter(x=>x!=null); return v.length?Math.max(...v):(state.prices[t]||0); };
-                updateAISignalPanel({
-                    gushPrice: state.prices.GUSH||0,
-                    dripPrice: state.prices.DRIP||0,
-                    xopPrice:  state.prices.XOP||0,
-                    usoPrice:  state.prices.USO||0,
-                    gushMA9:   state.movingAverages.GUSH?.MA9||0,
-                    dripMA9:   state.movingAverages.DRIP?.MA9||0,
-                    xopMA9:    state.movingAverages.XOP?.MA9||0,
-                    usoMA9:    state.movingAverages.USO?.MA9||0,
-                    gushMA21:  state.movingAverages.GUSH?.MA21||0,
-                    dripMA21:  state.movingAverages.DRIP?.MA21||0,
-                    usoMA21:   state.movingAverages.USO?.MA21||0,
-                    gushRecentHigh: rh('GUSH'),
-                    dripRecentHigh: rh('DRIP'),
-                    currentPosition: null,
-                    entryPrice: null
-                });
-            }
+            updateProfitPlan();
+            updateSignalChecklist();
         }
 
         function updateSignalDisplay() {
@@ -2211,21 +2209,20 @@ function addPosition() {
         }
 
         function updateUI() {
-            console.log('[render:updateUI] status:', state.dataStatus, 'liveDataOk:', liveDataOk);
             for (const ticker of TICKERS) {
                 const price = state.prices[ticker];
                 const change = state.changes[ticker];
                 const highLow = state.dayHighLow[ticker];
                 const volume = state.volumes[ticker];
 
-                document.getElementById(`price-${ticker}`).textContent = price ? price.toFixed(2) : (state.dataStatus === 'LOADING' ? '...' : '—');
+                document.getElementById(`price-${ticker}`).textContent = price.toFixed(2);
                 const changeEl = document.getElementById(`change-${ticker}`);
-                const changeClass = (change?.dollar || 0) >= 0 ? 'price-up' : 'price-down';
-                changeEl.textContent = (change.dollar >= 0 ? '+' : '') + change?.dollar ? change.dollar.toFixed(2) : '—' + ' (' + change?.percent ? change.percent.toFixed(2) : '—' + '%)';
+                const changeClass = change.dollar >= 0 ? 'price-up' : 'price-down';
+                changeEl.textContent = (change.dollar >= 0 ? '+' : '') + change.dollar.toFixed(2) + ' (' + change.percent.toFixed(2) + '%)';
                 changeEl.className = changeClass;
 
-                document.getElementById(`high-${ticker}`).textContent = highLow?.high ? highLow.high.toFixed(2) : '—';
-                document.getElementById(`low-${ticker}`).textContent = highLow?.low ? highLow.low.toFixed(2) : '—';
+                document.getElementById(`high-${ticker}`).textContent = highLow.high.toFixed(2);
+                document.getElementById(`low-${ticker}`).textContent = highLow.low.toFixed(2);
                 document.getElementById(`vol-${ticker}`).textContent = (volume / 1000000).toFixed(1);
             }
 
@@ -2394,10 +2391,10 @@ function addPosition() {
         setInterval(updateSnapshots, 10000);
         setInterval(updateGeoRisk, 15000);
         setInterval(() => {
-            const events = [
+           const events = [
                 { type: "BUY", msg: "BUY signal generated" },
                 { type: "SELL", msg: "SELL signal generated" },
-                { type: "TECHNICAL", msg: "RSI oversold condition detected" },
+                { type: "TECHMNICAL", msg: "RSI oversold condition detected" },
                 { type: "GEO", msg: "Geopolitical risk increased" },
                 { type: "CONFIRMATION", msg: "XOP confirmation active" },
                 { type: "DIVERGENCE", msg: "Correlation divergence detected" }
@@ -2407,665 +2404,80 @@ function addPosition() {
         }, 8000);
     </script>
     <script>
-function updateAISignalPanel(d) {
-  if (!dataIsReady()) return;
-  const usoAboveMA9  = d.usoPrice > d.usoMA9;
-  const usoAboveMA21 = d.usoPrice > (d.usoMA21 || d.usoMA9 * 0.98);
-  const xopAboveMA9  = d.xopPrice > d.xopMA9;
-  const gushAboveMA9 = d.gushPrice > d.gushMA9;
-  const dripAboveMA9 = d.dripPrice > d.dripMA9;
+function updateEnergyAISignal(d){
 
-  // New trend/breakout variables
-  const usoTrend = (state.prices.USO > (state.movingAverages?.USO?.ma9 || 0)) ? "UP" : "DOWN";
-  const xopTrend = (state.prices.XOP > (state.movingAverages?.XOP?.ma9 || 0)) ? "UP" : "DOWN";
-  const gushBreakout = state.prices.GUSH > (state.movingAverages?.GUSH?.ma9 || 0);
-  const dripBreakout = state.prices.DRIP > (state.movingAverages?.DRIP?.ma9 || 0);
+  const bullish = d.usoPrice > d.usoMA9 && d.xopPrice > d.xopMA9;
+  const bearish = d.usoPrice < d.usoMA9 && d.xopPrice < d.xopMA9;
 
-  // MARKET DIRECTION
-  let bias;
-  if (usoTrend === "UP" && xopTrend === "UP") {
-    bias = "BULLISH";
+  let signal="NO TRADE", ticker="NONE", confidence="LOW";
+
+  if(bullish && d.gushPrice>d.gushRecentHigh){
+    signal="BUY"; ticker="GUSH"; confidence="HIGH";
   }
-  else if (usoTrend === "DOWN" && xopTrend === "DOWN") {
-    bias = "BEARISH";
-  }
-  else {
-    bias = "CHOP";
+  else if(bearish && d.dripPrice>d.dripRecentHigh){
+    signal="BUY"; ticker="DRIP"; confidence="HIGH";
   }
 
-  // Backward compatibility aliases
-  const trendingBullish = bias === "BULLISH";
-  const trendingBearish = bias === "BEARISH";
-  const mixed = bias === "CHOP";
+  // UI
+  document.getElementById("signalBadge").textContent=signal;
+  document.getElementById("signalTicker").textContent=ticker;
+  document.getElementById("confidenceValue").textContent=confidence;
+  document.getElementById("scoreText").textContent="Simple Mode";
 
-  // Market Regime
-  const rb = document.getElementById('aiRegimeBadge');
-  const rt = document.getElementById('aiRegimeText');
-  const rc = document.getElementById('aiRegimeCard');
-  if (rb) {
-    rb.textContent = bias;
-    rb.className = bias === 'BULLISH' ? 'rg-badge badge-bullish' : bias === 'BEARISH' ? 'rg-badge badge-bearish' : 'rg-badge badge-neutral';
+  document.getElementById("signalSummary").textContent =
+    bullish ? "Bullish oil + XOP alignment"
+    : bearish ? "Bearish oil + XOP alignment"
+    : "No alignment";
+
+  document.getElementById("regimeBadge").textContent =
+    bullish ? "BULLISH"
+    : bearish ? "BEARISH"
+    : "CHOP";
+
+  document.getElementById("regimeText").textContent =
+    bullish ? "Trend up"
+    : bearish ? "Trend down"
+    : "Stay out";
+
+  document.getElementById("reasonText").textContent =
+    "Based on oil + XOP alignment";
+
+  document.getElementById("triggerText").textContent =
+    "Breakout confirmation";
+
+  document.getElementById("invalidationText").textContent =
+    "Loss of trend";
+
+  document.getElementById("entryText").textContent="Breakout";
+  document.getElementById("stopText").textContent="Below MA21";
+  document.getElementById("target1Text").textContent="1.5R";
+  document.getElementById("target2Text").textContent="3R";
+
+  document.getElementById("positionText").textContent=d.currentPosition||"Flat";
+
+  if(d.entryPrice){
+    const pnl=((d.gushPrice-d.entryPrice)/d.entryPrice*100).toFixed(2);
+    document.getElementById("pnlText").textContent="P/L: "+pnl+"%";
   }
-  if (rt) rt.textContent = bias === 'BULLISH' ? 'USO + XOP above MA9' : bias === 'BEARISH' ? 'USO + XOP below MA9' : 'No directional trend — stay flat';
-  if (rc) rc.className = bias === 'BULLISH' ? 'sig-card ac-green' : bias === 'BEARISH' ? 'sig-card ac-red' : 'sig-card ac-amber';
-  // SIGNAL
-  const sc = document.getElementById('aiSignalCard');
-  let signal;
-  if (bias === "BULLISH" && gushBreakout) {
-    signal = "BUY GUSH";
-  }
-  else if (bias === "BEARISH" && dripBreakout) {
-    signal = "BUY DRIP";
-  }
-  else {
-    signal = "NO TRADE";
-  }
-  let sClass = signal === 'BUY GUSH' ? 'ss-buy' : signal === 'BUY DRIP' ? 'ss-buy' : 'ss-none';
-  let activeTicker = signal === 'BUY GUSH' ? 'GUSH' : signal === 'BUY DRIP' ? 'DRIP' : null;
-
-  sc.className = signal === 'BUY GUSH' ? 'sig-card ac-green' : signal === 'BUY DRIP' ? 'sig-card ac-green' : 'sig-card';
-
-  const sb = document.getElementById('aiSignalBadge');
-  sb.textContent=signal; sb.className = signal === 'BUY GUSH' ? 'ss-badge badge-bullish' : signal === 'BUY DRIP' ? 'ss-badge badge-bearish' : 'ss-badge badge-neutral';
-  if (signal==='BUY GUSH' || signal==='BUY DRIP') sb.classList.add('pulsing'); else sb.classList.remove('pulsing');
-  document.getElementById('aiSignalTicker').textContent = activeTicker||'---';
-  document.getElementById('aiSignalSummary').textContent =
-    trendingBullish ? 'Bullish oil + XOP alignment'
-    : trendingBearish ? 'Bearish oil + XOP alignment'
-    : mixed ? 'Conflicting — no directional edge' : 'No trend detected';
-
-  // Confidence
-  const confN = signal==='BUY'?85 : signal==='HOLD'?72 : signal==='WATCHLIST'?52 : signal==='TAKE PROFIT'?90 : signal==='CUT LOSS'?95 : 18;
-  const cv = document.getElementById('aiConfValue');
-  cv.textContent = confN+'%';
-  cv.style.color = confN>=80?'#4ade80':confN>=50?'#fcd34d':'#64748b';
-  document.getElementById('aiConfSub').textContent = 'USOΔMA9:'+(d.usoPrice-d.usoMA9).toFixed(2)+' · XOPΔMA9:'+(d.xopPrice-d.xopMA9).toFixed(2);
-  const bar=document.getElementById('aiConfBar');
-  bar.style.width=confN+'%'; bar.style.background=confN>=80?'#4ade80':confN>=50?'#fcd34d':'#475569';
-
-  // Position
-  document.getElementById('aiPositionText').textContent = d.currentPosition||'Flat';
-  const pnlEl=document.getElementById('aiPnlText');
-  const posCard=document.getElementById('aiPosCard');
-  if (d.entryPrice && d.currentPosition && d.currentPosition!=='Flat') {
-    const ap2 = d.currentPosition==='GUSH' ? d.gushPrice : d.dripPrice;
-    const pnl = ((ap2-d.entryPrice)/d.entryPrice*100).toFixed(2);
-    pnlEl.textContent='Entry $'+d.entryPrice.toFixed(2)+' · P/L: '+(parseFloat(pnl)>=0?'+':'')+pnl+'%';
-    pnlEl.style.color=parseFloat(pnl)>=0?'#4ade80':'#f87171';
-    posCard.className=parseFloat(pnl)>=0?'sig-card ac-green':'sig-card ac-red';
-  } else { pnlEl.textContent='No open position'; pnlEl.style.color=''; posCard.className='sig-card'; }
-
-  // Analysis
-  const uD=(d.usoPrice-d.usoMA9).toFixed(2), xD=(d.xopPrice-d.xopMA9).toFixed(2), gD=(d.gushPrice-d.gushMA9).toFixed(2), dD=(d.dripPrice-d.dripMA9).toFixed(2);
-  let reason='';
-  if (trendingBullish) reason='USO is '+(parseFloat(uD)>=0?'+':'')+uD+' vs MA9 with XOP '+(parseFloat(xD)>=0?'+':'')+xD+' confirming. GUSH is '+(parseFloat(gD)>=0?'above':'below')+' MA9 by $'+Math.abs(gD)+'.';
-  else if (trendingBearish) reason='USO is '+uD+' vs MA9. XOP confirming at '+xD+'. DRIP '+(parseFloat(dD)>=0?'above':'below')+' MA9 by $'+Math.abs(dD)+'.';
-  else if (mixed) reason='USO '+(usoAboveMA9?'above':'below')+' MA9 but XOP '+(xopAboveMA9?'above':'below')+' MA9. Divergence = no clean trade.';
-  else reason='No trend. USO and XOP near MA9 with low momentum. Avoid leveraged ETF trades here.';
-  document.getElementById('aiReasonText').textContent=reason;
-
-  // Trigger / Invalidation
-  const te=document.getElementById('aiTriggerText'), ie=document.getElementById('aiInvalidText');
-  if (activeTicker==='GUSH') {
-    te.textContent='❆ Entry above $'+d.gushRecentHigh.toFixed(2)+' on volume';
-    ie.textContent='✕ Invalid if GUSH closes below MA21 ($'+(d.gushMA21||d.gushMA9*.975).toFixed(2)+') or USO loses MA9';
-  } else if (activeTicker==='DRIP') {
-    te.textContent='❆ Entry above $'+d.dripRecentHigh.toFixed(2)+' on volume';
-    ie.textContent='✕ Invalid if DRIP closes below MA21 ($'+(d.dripMA21||d.dripMA9*.975).toFixed(2)+') or XOP reclaims MA9';
-  } else {
-    te.textContent='Wait for USO + XOP to align on same side of MA9';
-    ie.textContent='No active setup';
-  }
-
-  // Trade Plan
-  const ap3 = activeTicker==='GUSH'?d.gushPrice:activeTicker==='DRIP'?d.dripPrice:null;
-  const aM21 = activeTicker==='GUSH'?(d.gushMA21||d.gushMA9*.975):activeTicker==='DRIP'?(d.dripMA21||d.dripMA9*.975):null;
-  const rh2 = activeTicker==='GUSH'?d.gushRecentHigh:activeTicker==='DRIP'?d.dripRecentHigh:null;
-  if (ap3&&rh2) {
-    document.getElementById('aiEntry').textContent='$'+rh2.toFixed(2)+' breakout';
-    document.getElementById('aiStop').textContent='$'+aM21.toFixed(2);
-    document.getElementById('aiT1').textContent='$'+(ap3*1.08).toFixed(2);
-    document.getElementById('aiT2').textContent='$'+(ap3*1.15).toFixed(2);
-  } else {
-    document.getElementById('aiEntry').textContent='No setup';
-    ['aiStop','aiT1','aiT2'].forEach(id=>document.getElementById(id).textContent='—');
-  }
-
-  document.getElementById('aiPanelTS').textContent='Updated '+new Date().toLocaleTimeString();
 }
     </script>
 
-<script>
-
-// ── Alert System ────────────────────────────────────────────────
-const MAX_ALERTS = 10;
-const alertHistory = [];
-const alertDedup = new Set();
-
-const ALERT_TYPE_MAP = {
-  "TRENDING BULLISH":     { cls: "bullish",   pri: "MEDIUM" },
-  "TRENDING BEARISH":     { cls: "bearish",   pri: "MEDIUM" },
-  "RANGE / CHOP":         { cls: "neutral",   pri: "LOW"    },
-  "MIXED":                { cls: "neutral",   pri: "LOW"    },
-  "GUSH WATCHLIST":       { cls: "watchlist", pri: "LOW"    },
-  "GUSH BUY TRIGGER":     { cls: "bullish",   pri: "HIGH"   },
-  "DRIP WATCHLIST":       { cls: "watchlist", pri: "LOW"    },
-  "DRIP BUY TRIGGER":     { cls: "bearish",   pri: "HIGH"   },
-  "NO TRADE":             { cls: "neutral",   pri: "MEDIUM" },
-  "TAKE PROFIT":          { cls: "bullish",   pri: "HIGH"   },
-  "CUT LOSS":             { cls: "danger",    pri: "HIGH"   },
-  "SWITCH GUSH TO DRIP":  { cls: "bearish",   pri: "HIGH"   },
-  "SWITCH DRIP TO GUSH":  { cls: "bullish",   pri: "HIGH"   },
-  "LIVE DATA FAILED":     { cls: "danger",    pri: "HIGH"   },
-  "DATA UNAVAILABLE":     { cls: "danger",    pri: "HIGH"   },
-  "HIGH GEO RISK":        { cls: "georisk",   pri: "MEDIUM" },
-  "SIGNAL LOW CONFIDENCE":{ cls: "watchlist", pri: "LOW"    },
-};
-
-function addAlert(headline, desc, priority) {
-  const key = headline;
-  if (alertDedup.has(key)) return;
-  alertDedup.add(key);
-
-  const meta = ALERT_TYPE_MAP[headline] || { cls: "neutral", pri: priority || "LOW" };
-  const pri  = priority || meta.pri;
-  const now  = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-  alertHistory.unshift({ headline, desc, priority: pri, cls: meta.cls, time: now });
-  if (alertHistory.length > MAX_ALERTS) alertHistory.pop();
-
-  renderAlerts();
-}
-
-function clearAlerts() {
-  alertHistory.length = 0;
-  alertDedup.clear();
-  renderAlerts();
-}
-
-function renderAlerts() {
-  const feed  = document.getElementById('alertsFeed');
-  const count = document.getElementById('alertsCount');
-  if (!feed) return;
-
-  if (alertHistory.length === 0) {
-    feed.innerHTML = '<div class="alerts-empty">No alerts — waiting for data...</div>';
-    if (count) count.textContent = '0 alerts';
-    return;
-  }
-
-  if (count) count.textContent = alertHistory.length + ' alert' + (alertHistory.length !== 1 ? 's' : '');
-
-  feed.innerHTML = alertHistory.map(a => `
-    <div class="alert-row ${a.cls}">
-      <span class="alert-badge ${a.cls}">${a.headline}</span>
-      <div class="alert-body">
-        <div class="alert-headline">${a.headline}</div>
-        <div class="alert-desc">${a.desc}</div>
-        <div class="alert-footer">
-          <span class="alert-priority ${a.priority}">${a.priority}</span>
-          <span class="alert-time">${a.time}</span>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function runAlertLogic() {
-  if (!dataIsReady()) { addAlert("DATA UNAVAILABLE", "Prices not loaded yet — signals disabled", "HIGH"); return; }
-  // Read prices and MAs directly from DOM elements
-  function domNum(id) {
-    const el = document.getElementById(id);
-    if (!el) return 0;
-    return parseFloat(el.textContent.replace(/[^0-9.-]/g, '')) || 0;
-  }
-
-  const gushPrice = domNum('price-GUSH');
-  const dripPrice = domNum('price-DRIP');
-  const xopPrice  = domNum('price-XOP');
-  const usoPrice  = domNum('price-USO');
-
-  if (!gushPrice || !usoPrice || !xopPrice) {
-    addAlert("DATA UNAVAILABLE", "Prices not loaded yet, signals disabled", "HIGH");
-    return;
-  }
-
-  const usoMA9   = domNum('ma-uso-9');
-  const xopMA9   = domNum('ma-xop-9');
-  const gushMA9  = domNum('ma-gush-9');
-  const gushMA21 = domNum('ma-gush-21');
-  const dripMA9  = domNum('ma-drip-9');
-  const dripMA21 = domNum('ma-drip-21');
-
-  const usoTrend    = usoMA9  ? (usoPrice  > usoMA9  ? "UP" : "DOWN") : null;
-  const xopTrend    = xopMA9  ? (xopPrice  > xopMA9  ? "UP" : "DOWN") : null;
-  const gushBreakout= gushMA9 ? gushPrice > gushMA9 : false;
-  const dripBreakout= dripMA9 ? dripPrice > dripMA9 : false;
-  const marketChop  = !usoTrend || !xopTrend || usoTrend !== xopTrend;
-
-  // Confidence from aiConfValue (e.g. "18%")
-  const confEl = document.getElementById('aiConfValue');
-  const confidence = confEl ? (parseFloat(confEl.textContent) || 50) : 50;
-
-  // Geo risk — sum up individual geo scores if overall not found
-  const geoOverall = domNum('geoOverallScore') || domNum('geoRiskScore') || domNum('geoScore');
-  const geoRiskScore = geoOverall;
-
-  // Clear dedup so logic re-evaluates on each cycle
-  alertHistory.length = 0;
-  alertDedup.clear();
-
-  // 1. Market Regime
-  if (usoTrend === "UP" && xopTrend === "UP") {
-    addAlert("TRENDING BULLISH", "Oil and XOP are both above short-term trend", "MEDIUM");
-  } else if (usoTrend === "DOWN" && xopTrend === "DOWN") {
-    addAlert("TRENDING BEARISH", "Oil and XOP are both below short-term trend", "MEDIUM");
-  } else {
-    addAlert("RANGE / CHOP", "Mixed or sideways conditions — avoid forcing trades", "LOW");
-  }
-
-  // 2. Trade Setups
-  if (usoTrend === "UP" && xopTrend === "UP" && !gushBreakout) {
-    addAlert("GUSH WATCHLIST", "Bullish bias forming, waiting for GUSH breakout", "LOW");
-  }
-  if (usoTrend === "UP" && xopTrend === "UP" && gushBreakout) {
-    addAlert("GUSH BUY TRIGGER", "Bullish regime confirmed and GUSH broke above MA9", "HIGH");
-  }
-  if (usoTrend === "DOWN" && xopTrend === "DOWN" && !dripBreakout) {
-    addAlert("DRIP WATCHLIST", "Bearish bias forming, waiting for DRIP breakout", "LOW");
-  }
-  if (usoTrend === "DOWN" && xopTrend === "DOWN" && dripBreakout) {
-    addAlert("DRIP BUY TRIGGER", "Bearish regime confirmed and DRIP broke above MA9", "HIGH");
-  }
-
-  // 3. No-trade protection
-  if (marketChop) {
-    addAlert("NO TRADE", "Signals are mixed or choppy — stand aside", "MEDIUM");
-  }
-
-  // 4. Risk / confidence
-  if (geoRiskScore >= 80) addAlert("HIGH GEO RISK", "Headline risk elevated — reduce size and widen stops", "MEDIUM");
-  if (confidence < 30) addAlert("SIGNAL LOW CONFIDENCE", "Setup is weak — avoid aggressive entries", "LOW");
-}
-
-const _origCalcSignals = typeof calculateSignals === 'function' ? calculateSignals : null;
-if (_origCalcSignals) {
-  window.calculateSignals = function() {
-    _origCalcSignals();
-    runAlertLogic();
-    updateSignalChecklist();
-  };
-} else {
-  const _origUpdateUI = typeof updateUI === 'function' ? updateUI : null;
-  if (_origUpdateUI) {
-    window.updateUI = function() {
-      _origUpdateUI();
-      runAlertLogic();
-    };
-  }
-}
-</script>
-<style id="polish-v2">
-/* ═══════════════════════════════════════════════
-   ENERGY TERMINAL — VISUAL POLISH v2
-   Override layer — do not remove existing styles
-═══════════════════════════════════════════════ */
-
-/* Base & Typography */
-body {
-  background: #060a0f !important;
-  font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif !important;
-  color: #c9d1d9 !important;
-  letter-spacing: 0.01em;
-}
-
-/* ── Layout container ── */
-.container, .dashboard-container, .main-container, [class*="container"] {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 16px;
-}
-
-/* ── Section spacing ── */
-section, .section, .panel-section {
-  margin-bottom: 20px !important;
-}
-
-/* ══════════════════════════════
-   PRICE CARDS — Hero numbers
-══════════════════════════════ */
-.price-card, .quote-card, [class*="price-card"], [class*="quote-card"] {
-  background: linear-gradient(145deg, #0d1117, #111820) !important;
-  border: 1px solid #1c2333 !important;
-  border-radius: 12px !important;
-  padding: 18px 16px !important;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04) !important;
-  transition: border-color 0.2s, box-shadow 0.2s !important;
-  position: relative;
-  overflow: hidden;
-}
-.price-card::before, .quote-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(88,166,255,0.15), transparent);
-}
-.price-card:hover, .quote-card:hover {
-  border-color: #2d3748 !important;
-  box-shadow: 0 6px 32px rgba(0,0,0,0.5) !important;
-}
-
-/* Price number — make it big and bold */
-.price-value, .ticker-price, [id^="price-"], .price {
-  font-size: 26px !important;
-  font-weight: 700 !important;
-  letter-spacing: -0.5px !important;
-  color: #e6edf3 !important;
-  font-variant-numeric: tabular-nums !important;
-  line-height: 1.1 !important;
-}
-
-/* Ticker label */
-.ticker-label, .ticker-name, .card-ticker {
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  letter-spacing: 2px !important;
-  color: #8b949e !important;
-  text-transform: uppercase !important;
-  margin-bottom: 6px !important;
-}
-
-/* Change values */
-.change-positive, [class*="positive"], .up { color: #3fb950 !important; }
-.change-negative, [class*="negative"], .down { color: #f85149 !important; }
-
-/* ══════════════════════════════
-   AI SIGNAL PANEL — Hero Section
-══════════════════════════════ */
-.energy-ai-panel, #aiSignalPanel, [class*="ai-panel"], [class*="signal-panel"] {
-  background: linear-gradient(160deg, #0d1117 0%, #0a1628 50%, #0d1117 100%) !important;
-  border: 1px solid rgba(88,166,255,0.2) !important;
-  border-radius: 16px !important;
-  padding: 28px 24px !important;
-  box-shadow:
-    0 0 0 1px rgba(88,166,255,0.05),
-    0 8px 40px rgba(0,0,0,0.5),
-    0 0 60px rgba(88,166,255,0.04) !important;
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 20px !important;
-}
-.energy-ai-panel::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(88,166,255,0.4), rgba(139,92,246,0.3), transparent);
-}
-
-/* Regime badge — larger and more dramatic */
-#aiRegimeBadge, .regime-badge, [id*="regime"] {
-  font-size: 13px !important;
-  font-weight: 800 !important;
-  letter-spacing: 2px !important;
-  padding: 6px 16px !important;
-  border-radius: 6px !important;
-}
-
-/* Signal badge — the hero element */
-#aiSignalBadge, .signal-badge, [id*="signal-badge"], .ss-badge {
-  font-size: 14px !important;
-  font-weight: 900 !important;
-  letter-spacing: 2.5px !important;
-  padding: 8px 20px !important;
-  border-radius: 8px !important;
-}
-
-/* Badge colors — unified system */
-.badge-bullish, [class*="badge-bullish"], .rg-badge.badge-bullish {
-  background: rgba(35,134,54,0.2) !important;
-  color: #3fb950 !important;
-  border: 1px solid rgba(35,134,54,0.4) !important;
-  box-shadow: 0 0 16px rgba(35,134,54,0.15) !important;
-}
-.badge-bearish, [class*="badge-bearish"] {
-  background: rgba(218,54,51,0.2) !important;
-  color: #f85149 !important;
-  border: 1px solid rgba(218,54,51,0.4) !important;
-  box-shadow: 0 0 16px rgba(218,54,51,0.12) !important;
-}
-.badge-neutral, [class*="badge-neutral"] {
-  background: rgba(139,148,158,0.1) !important;
-  color: #8b949e !important;
-  border: 1px solid rgba(139,148,158,0.2) !important;
-}
-.badge-watchlist {
-  background: rgba(187,128,9,0.18) !important;
-  color: #e3b341 !important;
-  border: 1px solid rgba(187,128,9,0.35) !important;
-  box-shadow: 0 0 12px rgba(187,128,9,0.1) !important;
-}
-
-/* AI panel section labels */
-.energy-ai-panel .section-label, .energy-ai-panel label,
-.energy-grid .panel-label, .ai-label {
-  font-size: 9px !important;
-  font-weight: 700 !important;
-  letter-spacing: 2px !important;
-  text-transform: uppercase !important;
-  color: #484f58 !important;
-  margin-bottom: 6px !important;
-}
-
-/* ══════════════════════════════
-   SIGNAL CHECKLIST — TradingView Style
-══════════════════════════════ */
-.checklist-card {
-  background: linear-gradient(160deg, #0d1117, #0c1420) !important;
-  border: 1px solid #1c2333 !important;
-  border-radius: 14px !important;
-  padding: 20px !important;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.35) !important;
-}
-.checklist-header {
-  padding-bottom: 14px !important;
-  margin-bottom: 14px !important;
-  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
-}
-.checklist-title {
-  font-size: 10px !important;
-  letter-spacing: 2.5px !important;
-  color: #58a6ff !important;
-}
-.checklist-row {
-  padding: 10px 12px !important;
-  border-radius: 8px !important;
-  background: rgba(22,27,34,0.8) !important;
-  border: 1px solid rgba(255,255,255,0.04) !important;
-  border-left-width: 3px !important;
-  margin-bottom: 4px !important;
-  transition: background 0.2s !important;
-}
-.checklist-row:hover { background: rgba(30,38,50,0.9) !important; }
-.checklist-row.pass { border-left-color: #238636 !important; background: rgba(35,134,54,0.06) !important; }
-.checklist-row.fail { border-left-color: #da3633 !important; background: rgba(218,54,51,0.06) !important; }
-.check-icon { font-size: 14px !important; }
-.check-label { font-size: 12px !important; font-weight: 600 !important; color: #e6edf3 !important; }
-.check-detail { font-size: 10px !important; color: #6e7681 !important; margin-top: 1px !important; }
-.check-status.pass { color: #3fb950 !important; font-size: 9px !important; letter-spacing: 1px !important; }
-.check-status.fail { color: #f85149 !important; font-size: 9px !important; letter-spacing: 1px !important; }
-.checklist-footer {
-  margin-top: 14px !important;
-  padding-top: 12px !important;
-  border-top: 1px solid rgba(255,255,255,0.05) !important;
-}
-.checklist-score { font-size: 13px !important; font-weight: 700 !important; color: #8b949e !important; }
-.checklist-signal {
-  font-size: 10px !important;
-  font-weight: 800 !important;
-  letter-spacing: 2.5px !important;
-  padding: 4px 14px !important;
-  border-radius: 6px !important;
-}
-.checklist-signal.buy {
-  background: rgba(35,134,54,0.2) !important;
-  color: #3fb950 !important;
-  border-color: #238636 !important;
-  box-shadow: 0 0 12px rgba(35,134,54,0.2) !important;
-}
-.checklist-signal.watch {
-  background: rgba(187,128,9,0.18) !important;
-  color: #e3b341 !important;
-  border-color: rgba(187,128,9,0.4) !important;
-}
-
-/* ══════════════════════════════
-   ALERTS PANEL
-══════════════════════════════ */
-.alerts-panel {
-  background: #0d1117 !important;
-  border: 1px solid #1c2333 !important;
-  border-radius: 14px !important;
-  padding: 18px !important;
-}
-.alerts-title { color: #58a6ff !important; letter-spacing: 2px !important; }
-.alert-row {
-  border-radius: 8px !important;
-  padding: 10px 14px !important;
-  background: rgba(22,27,34,0.9) !important;
-  border: 1px solid rgba(255,255,255,0.04) !important;
-}
-.alert-row.bullish { border-left: 3px solid #238636 !important; background: rgba(35,134,54,0.05) !important; }
-.alert-row.bearish { border-left: 3px solid #da3633 !important; background: rgba(218,54,51,0.05) !important; }
-.alert-row.watchlist { border-left: 3px solid #9e6a03 !important; background: rgba(187,128,9,0.05) !important; }
-.alert-row.georisk { border-left: 3px solid #8957e5 !important; background: rgba(139,92,246,0.05) !important; }
-.alert-headline { font-size: 11px !important; font-weight: 700 !important; }
-.alert-desc { font-size: 10px !important; color: #6e7681 !important; }
-
-/* ══════════════════════════════
-   SECTION HEADERS & PANEL TITLES
-══════════════════════════════ */
-.panel-title, .section-title, .section-header,
-[class*="panel-title"], [class*="section-title"] {
-  font-size: 10px !important;
-  font-weight: 700 !important;
-  letter-spacing: 2.5px !important;
-  text-transform: uppercase !important;
-  color: #58a6ff !important;
-  margin-bottom: 16px !important;
-  padding-bottom: 10px !important;
-  border-bottom: 1px solid rgba(88,166,255,0.1) !important;
-}
-
-/* ══════════════════════════════
-   STATUS BADGE
-══════════════════════════════ */
-.status-badge, .data-status, #statusBadge, [class*="status-live"] {
-  font-size: 9px !important;
-  font-weight: 800 !important;
-  letter-spacing: 2px !important;
-  padding: 3px 10px !important;
-  border-radius: 20px !important;
-}
-.status-live {
-  background: rgba(35,134,54,0.15) !important;
-  color: #3fb950 !important;
-  border: 1px solid rgba(35,134,54,0.3) !important;
-  box-shadow: 0 0 8px rgba(35,134,54,0.2) !important;
-}
-.status-error {
-  background: rgba(218,54,51,0.15) !important;
-  color: #f85149 !important;
-  border: 1px solid rgba(218,54,51,0.3) !important;
-}
-
-/* ══════════════════════════════
-   TECHNICAL INDICATORS GRID
-══════════════════════════════ */
-.tech-grid, .indicators-grid, [class*="tech-grid"] {
-  gap: 10px !important;
-}
-.tech-card, .indicator-card, [class*="tech-card"], [class*="indicator"] {
-  background: linear-gradient(145deg, #0d1117, #111820) !important;
-  border: 1px solid #1c2333 !important;
-  border-radius: 10px !important;
-  padding: 14px !important;
-}
-.tech-label, .indicator-label { font-size: 9px !important; letter-spacing: 1.5px !important; color: #484f58 !important; }
-.tech-value, .indicator-value { font-size: 18px !important; font-weight: 700 !important; color: #e6edf3 !important; }
-
-/* ══════════════════════════════
-   BUTTONS
-══════════════════════════════ */
-.button, button.btn, .btn {
-  border-radius: 8px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.8px !important;
-  font-size: 11px !important;
-  transition: all 0.2s !important;
-}
-
-/* ══════════════════════════════
-   PORTFOLIO TABLE
-══════════════════════════════ */
-.portfolio-table th {
-  font-size: 9px !important;
-  letter-spacing: 1.5px !important;
-  color: #484f58 !important;
-  text-transform: uppercase !important;
-  padding: 10px 12px !important;
-  border-bottom: 1px solid #1c2333 !important;
-}
-.portfolio-table td {
-  padding: 10px 12px !important;
-  font-size: 12px !important;
-  border-bottom: 1px solid rgba(255,255,255,0.03) !important;
-}
-
-/* ══════════════════════════════
-   GENERAL CARD UPGRADE
-══════════════════════════════ */
-.panel-card, .card, [class*="panel-card"] {
-  background: linear-gradient(145deg, #0d1117, #111820) !important;
-  border: 1px solid #1c2333 !important;
-  border-radius: 12px !important;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
-}
-
-/* ══════════════════════════════
-   SCROLLBAR
-══════════════════════════════ */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #0d1117; }
-::-webkit-scrollbar-thumb { background: #21262d; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #30363d; }
-
-/* ══════════════════════════════
-   PULSING ANIMATION — refined
-══════════════════════════════ */
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(35,134,54,0); }
-  50% { box-shadow: 0 0 0 4px rgba(35,134,54,0.15); }
-}
-.pulsing { animation: pulse-glow 2s infinite !important; }
-
-/* ══════════════════════════════
-   MOBILE
-══════════════════════════════ */
-@media (max-width: 768px) {
-  .price-value, .ticker-price { font-size: 22px !important; }
-  .energy-ai-panel { padding: 18px 14px !important; }
-  #aiSignalBadge, .ss-badge { font-size: 12px !important; padding: 6px 14px !important; }
-}
-</style>
-
+<!-- ── Discord Alert Integration ─────────────────────────── -->
 <script id="discord-alerts">
-/* ── Discord Webhook Alert Integration ── */
 (function() {
-  var DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1490601343499374763/hv8_m7UgRViZKUZO-iTZl2eXdFpta-YkkMgRaSZmsPlvd6q6AuG9e6Zaq2ak_sf1l9wV';
+
+  // ── CONFIG ────────────────────────────────────────────────
+  // Paste your Discord webhook URL here:
+  var DISCORD_WEBHOOK = 'YOUR_DISCORD_WEBHOOK_URL_HERE';
+
+  // Minimum confidence to send an alert (same scale as gs.confidence / ds.confidence)
+  // Default 15 = only fires at the existing BUY threshold. Raise to 20+ for fewer alerts.
   var MIN_CONFIDENCE = 15;
-  var DEDUP_WINDOW_MS = 5 * 60 * 1000;
+
+  // Don't repeat the same alert key within this window (ms)
+  var DEDUP_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+
+  // ── DEDUP STORE ───────────────────────────────────────────
   var _sentAlerts = {};
 
   function _isDuplicate(key) {
@@ -3074,70 +2486,72 @@ section, .section, .panel-section {
   }
   function _markSent(key) { _sentAlerts[key] = Date.now(); }
 
+  // ── CORE SENDER ───────────────────────────────────────────
+  // Swap this function body when moving to a backend proxy
   window.sendDiscordAlert = function(payload) {
     if (!DISCORD_WEBHOOK || DISCORD_WEBHOOK === 'YOUR_DISCORD_WEBHOOK_URL_HERE') {
-      console.warn('[Discord] No webhook URL configured. Set DISCORD_WEBHOOK in discord-alerts script.'); return;
+      console.warn('[Discord] No webhook set — paste your URL into DISCORD_WEBHOOK.');
+      return;
     }
     fetch(DISCORD_WEBHOOK, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     }).then(function(r) {
-      if (!r.ok) console.warn('[Discord] HTTP error:', r.status);
-      else console.log('[Discord] Alert sent successfully.');
-    }).catch(function(e) { console.error('[Discord] Failed to send alert:', e); });
+      if (!r.ok) console.error('[Discord] Error:', r.status, r.statusText);
+      else console.log('[Discord] Sent ✓');
+    }).catch(function(e) { console.error('[Discord] Failed:', e.message); });
   };
 
+  // ── HELPERS ───────────────────────────────────────────────
   function _regime() {
-    if (typeof state !== 'undefined' && state.regime) return state.regime;
-    return 'UNKNOWN';
+    try {
+      var mas = state.movingAverages || {};
+      var p   = state.prices || {};
+      var uA  = (p.USO || 0) > ((mas.USO || {}).MA9 || 0);
+      var xA  = (p.XOP || 0) > ((mas.XOP || {}).MA9 || 0);
+      return (uA && xA) ? 'BULLISH' : (!uA && !xA) ? 'BEARISH' : 'CHOP';
+    } catch(e) { return '—'; }
   }
 
   function _checklistSummary() {
-    if (typeof state === 'undefined' || !state.checklist) return 'N/A';
-    var items = state.checklist;
-    var passed = Object.values(items).filter(Boolean).length;
-    var total = Object.keys(items).length;
-    return passed + '/' + total + ' checks passed';
+    var badge  = document.getElementById('checklistBadge');
+    var signal = document.getElementById('checklistSignal');
+    return (signal ? signal.textContent : '?') + '  ' + (badge ? badge.textContent : '?');
   }
 
   function _px(ticker) {
-    if (typeof state !== 'undefined' && state.prices && state.prices[ticker]) {
-      return '$' + parseFloat(state.prices[ticker]).toFixed(2);
-    }
-    return '$??';
+    try { var p = state.prices[ticker]; return p ? '$' + p.toFixed(2) : '—'; }
+    catch(e) { return '—'; }
   }
 
-  var C = { BUY: 36865, SELL: 16723249, SWITCH: 65535, PROFIT: 65280, LOSS: 16711680 };
+  // Discord embed colors (decimal)
+  var C = { BUY: 36865, SELL: 16723249, SWITCH: 65535, WARN: 16751872 };
 
   function _embed(title, desc, color, fields, footer) {
-    return {
-      embeds: [{
-        title: title,
-        description: desc,
-        color: color,
-        fields: fields || [],
-        timestamp: new Date().toISOString(),
-        footer: { text: footer || 'Energy Terminal' }
-      }]
-    };
+    return { embeds: [{ title: title, description: desc, color: color,
+      timestamp: new Date().toISOString(),
+      footer: { text: footer || 'Energy Terminal' },
+      fields: (fields || []).map(function(f) {
+        return { name: f[0], value: String(f[1]), inline: true };
+      })
+    }]};
   }
 
+  // ── ALERT BUILDERS ────────────────────────────────────────
   function alertBuy(ticker, conf, score) {
     var key = 'BUY_' + ticker;
     if (_isDuplicate(key) || conf < MIN_CONFIDENCE) return;
     _markSent(key);
-    var emoji = ticker === 'GUSH' ? '\u{1F7E2}' : '\u{1F534}';
+    var emoji = ticker === 'GUSH' ? '🟢' : '🔴';
     window.sendDiscordAlert(_embed(
-      emoji + ' BUY ' + ticker,
-      '**Signal:** BUY ' + ticker + '\n**Price:** ' + _px(ticker) + '\n**Regime:** ' + _regime(),
-      ticker === 'GUSH' ? C.BUY : C.SELL,
-      [
-        {name: 'Confidence', value: conf + '%', inline: true},
-        {name: 'Score', value: String(score), inline: true},
-        {name: 'Checklist', value: _checklistSummary(), inline: false}
-      ],
-      'Energy Terminal Alert'
+      emoji + '  BUY ' + ticker,
+      '**Strong buy signal.** All conditions aligned.',
+      C.BUY,
+      [['💰 Price', _px(ticker)], ['📊 Regime', _regime()],
+       ['🎯 Confidence', conf + '%'], ['📈 Score', score + '/100'],
+       ['✅ Checklist', _checklistSummary()]],
+      'Energy Terminal • min conf: ' + MIN_CONFIDENCE + '%'
     ));
   }
 
@@ -3146,92 +2560,101 @@ section, .section, .panel-section {
     if (_isDuplicate(key) || conf < MIN_CONFIDENCE) return;
     _markSent(key);
     window.sendDiscordAlert(_embed(
-      '\u{1F53B} CUT LOSS ' + ticker,
-      '**Signal:** SELL/EXIT ' + ticker + '\n**Price:** ' + _px(ticker) + '\n**Regime:** ' + _regime(),
+      '🔻  CUT LOSS — ' + ticker,
+      'Signal flipped bearish. Consider reducing or exiting.',
       C.SELL,
-      [
-        {name: 'Confidence', value: conf + '%', inline: true},
-        {name: 'Score', value: String(score), inline: true},
-        {name: 'Checklist', value: _checklistSummary(), inline: false}
-      ],
-      'Energy Terminal Alert'
+      [['💰 Price', _px(ticker)], ['📊 Regime', _regime()],
+       ['🎯 Confidence', conf + '%'], ['📉 Score', score + '/100'],
+       ['✅ Checklist', _checklistSummary()]],
+      'Energy Terminal'
     ));
   }
 
   function alertTakeProfit(ticker, pnl, price) {
-    var key = 'PROFIT_' + ticker;
+    var key = 'TP_' + ticker + '_' + Math.round(pnl / 5);
     if (_isDuplicate(key)) return;
     _markSent(key);
     window.sendDiscordAlert(_embed(
-      '\u{1F4B8} TAKE PROFIT \u2014 ' + ticker,
-      '**Ticker:** ' + ticker + '\n**Price:** $' + parseFloat(price).toFixed(2) + '\n**P&L:** +' + pnl + '%',
-      C.PROFIT,
-      [{name: 'Regime', value: _regime(), inline: true}],
-      'Energy Terminal Alert'
+      '💸  TAKE PROFIT — ' + ticker,
+      'Position significantly in profit. Consider locking in gains.',
+      C.BUY,
+      [['💰 Price', '$' + price.toFixed(2)], ['📈 P&L', '+' + pnl.toFixed(1) + '%'],
+       ['📊 Regime', _regime()], ['✅ Checklist', _checklistSummary()]],
+      'Energy Terminal • Take Profit'
     ));
   }
 
   function alertCutLoss(ticker, pnl, price) {
-    var key = 'LOSS_' + ticker;
+    var key = 'CL_' + ticker + '_' + Math.round(pnl / 5);
     if (_isDuplicate(key)) return;
     _markSent(key);
     window.sendDiscordAlert(_embed(
-      '\u{1F6D1} STOP LOSS \u2014 ' + ticker,
-      '**Ticker:** ' + ticker + '\n**Price:** $' + parseFloat(price).toFixed(2) + '\n**P&L:** ' + pnl + '%',
-      C.LOSS,
-      [{name: 'Regime', value: _regime(), inline: true}],
-      'Energy Terminal Alert'
+      '🛑  STOP LOSS — ' + ticker,
+      'Hit stop threshold. Protect your capital.',
+      C.SELL,
+      [['💰 Price', '$' + price.toFixed(2)], ['📉 P&L', pnl.toFixed(1) + '%'],
+       ['📊 Regime', _regime()], ['✅ Checklist', _checklistSummary()]],
+      'Energy Terminal • Stop Loss'
     ));
   }
 
   function alertSwitch(from, to) {
-    var key = 'SWITCH_' + from + '_' + to;
+    var key = 'SW_' + from + '_' + to;
     if (_isDuplicate(key)) return;
     _markSent(key);
     window.sendDiscordAlert(_embed(
-      '\u{1F504} SWITCH SIGNAL',
-      '**Exit:** ' + from + '\n**Enter:** ' + to + '\n**Regime:** ' + _regime(),
+      '🔄  SWITCH — ' + from + ' → ' + to,
+      'Regime flip. Consider rotating position.',
       C.SWITCH,
-      [{name: 'Checklist', value: _checklistSummary(), inline: false}],
-      'Energy Terminal Alert'
+      [['↩️ Exit', from + ' ' + _px(from)], ['↪️ Enter', to + ' ' + _px(to)],
+       ['📊 Regime', _regime()], ['✅ Checklist', _checklistSummary()]],
+      'Energy Terminal • Switch Signal'
     ));
   }
 
+  // ── HOOK INTO checkAlerts() ───────────────────────────────
   function _dcCheckAlerts() {
+    // Run original logic first
     if (window._origCheckAlerts) window._origCheckAlerts();
+
     if (typeof state === 'undefined' || !state.signals) return;
     var gs = state.signals.GUSH || {};
     var ds = state.signals.DRIP || {};
-    if (gs.signal === 'BUY')  alertBuy('GUSH', gs.confidence, gs.score);
+
+    if (gs.signal === 'BUY')  alertBuy('GUSH',  gs.confidence, gs.score);
     if (gs.signal === 'SELL') alertSell('GUSH', gs.confidence, gs.score);
-    if (ds.signal === 'BUY')  alertBuy('DRIP', ds.confidence, ds.score);
+    if (ds.signal === 'BUY')  alertBuy('DRIP',  ds.confidence, ds.score);
     if (ds.signal === 'SELL') alertSell('DRIP', ds.confidence, ds.score);
-    if (gs.signal === 'BUY' && ds.signal === 'SELL') alertSwitch('DRIP', 'GUSH');
-    if (ds.signal === 'BUY' && gs.signal === 'SELL') alertSwitch('GUSH', 'DRIP');
-    if (typeof state !== 'undefined' && state.portfolio) {
-      var port = state.portfolio;
-      if (port.GUSH && port.GUSH.pnlPct !== undefined) {
-        if (port.GUSH.pnlPct >= 30) alertTakeProfit('GUSH', port.GUSH.pnlPct, port.GUSH.currentPrice || 0);
-        if (port.GUSH.pnlPct <= -15) alertCutLoss('GUSH', port.GUSH.pnlPct, port.GUSH.currentPrice || 0);
-      }
-      if (port.DRIP && port.DRIP.pnlPct !== undefined) {
-        if (port.DRIP.pnlPct >= 30) alertTakeProfit('DRIP', port.DRIP.pnlPct, port.DRIP.currentPrice || 0);
-        if (port.DRIP.pnlPct <= -15) alertCutLoss('DRIP', port.DRIP.pnlPct, port.DRIP.currentPrice || 0);
-      }
+
+    if (gs.signal === 'BUY'  && ds.signal === 'SELL') alertSwitch('DRIP', 'GUSH');
+    if (ds.signal === 'BUY'  && gs.signal === 'SELL') alertSwitch('GUSH', 'DRIP');
+
+    if (typeof portfolio !== 'undefined') {
+      ['GUSH', 'DRIP'].forEach(function(t) {
+        var pos = portfolio[t]; var px = (state.prices || {})[t];
+        if (!pos || !px) return;
+        var pnl = ((px - pos.avgCost) / pos.avgCost) * 100;
+        if (pnl <= -15) alertCutLoss(t, pnl, px);
+        else if (pnl >= 30) alertTakeProfit(t, pnl, px);
+      });
     }
   }
 
+  // Override after page scripts load
   setTimeout(function() {
     if (typeof checkAlerts === 'function' && !window._origCheckAlerts) {
       window._origCheckAlerts = checkAlerts;
       window.checkAlerts = _dcCheckAlerts;
-      console.log('[Discord] Alert hooks installed successfully.');
-    } else {
-      console.warn('[Discord] checkAlerts not found or already hooked.');
+      console.log('[Discord] Hooked into checkAlerts() ✓');
     }
   }, 0);
+
+  console.log('[Discord] Integration loaded. Set DISCORD_WEBHOOK to activate.');
+
 })();
 </script>
+<!-- ── End Discord Alert Integration ─────────────────────── -->
+
 <!-- ── Multi-Timeframe Toggle ─────────────────────────────── -->
 <style id="tf-style">
 .tf-toggle-group {
@@ -3271,6 +2694,7 @@ section, .section, .panel-section {
 
 <script>
 (function() {
+  // ── Config ────────────────────────────────────────────────
   const TF_CONFIG = {
     '1D':  { interval: '5m',  range: '1d',  label: 'PRICE CHART - 1D INTRADAY'  },
     '5D':  { interval: '15m', range: '5d',  label: 'PRICE CHART - 5D'           },
@@ -3278,8 +2702,15 @@ section, .section, .panel-section {
   };
   const PROXY = 'https://corsproxy.io/?url=';
   const TICKERS_TF = ['GUSH', 'DRIP', 'XOP', 'USO'];
+  const COLORS = {
+    GUSH: { border: '#00FF41', bg: 'rgba(0,255,65,0.07)' },
+    DRIP: { border: '#FF3131', bg: 'rgba(255,49,49,0.07)' },
+    XOP:  { border: '#00FFFF', bg: 'rgba(0,255,255,0.07)' },
+    USO:  { border: '#FFA500', bg: 'rgba(255,165,0,0.07)' }
+  };
   window.currentTF = '1D';
 
+  // ── Fetch chart data from Yahoo Finance ──────────────────
   async function fetchTFData(ticker, tf) {
     const cfg = TF_CONFIG[tf];
     const url = PROXY + encodeURIComponent(
@@ -3311,24 +2742,32 @@ section, .section, .panel-section {
     }
   }
 
+  // ── Rebuild or update the chart ──────────────────────────
   async function refreshChartForTF(tf) {
-    const results = await Promise.all(TICKERS_TF.map(t => fetchTFData(t, tf)));
+    const results = await Promise.all(
+      TICKERS_TF.map(t => fetchTFData(t, tf))
+    );
+    // Use the longest label set as x-axis
     let labels = [];
     results.forEach(r => { if (r && r.labels.length > labels.length) labels = r.labels; });
+
     if (typeof chartInstance === 'undefined' || !chartInstance) {
       console.warn('[tf] chartInstance not ready yet');
       return;
     }
+
     chartInstance.data.labels = labels;
     TICKERS_TF.forEach((ticker, idx) => {
       const data = results[idx];
       chartInstance.data.datasets[idx].data = data ? data.prices : [];
     });
     chartInstance.update('none');
+
     const titleEl = document.getElementById('chartTitle');
     if (titleEl) titleEl.textContent = TF_CONFIG[tf].label;
   }
 
+  // ── Toggle click handler ──────────────────────────────────
   document.addEventListener('DOMContentLoaded', function() {
     const group = document.getElementById('tfToggle');
     if (!group) return;
@@ -3343,6 +2782,9 @@ section, .section, .panel-section {
       );
       refreshChartForTF(tf);
     });
+
+    // Initial 1D load — wait for chartInstance to be initialized
+    // by the existing initializeData() flow, then fetch 1D data
     function waitForChart(attempts) {
       if (typeof chartInstance !== 'undefined' && chartInstance) {
         refreshChartForTF('1D');
@@ -3350,6 +2792,7 @@ section, .section, .panel-section {
         setTimeout(function() { waitForChart(attempts + 1); }, 500);
       }
     }
+    // Give the existing init flow a head start
     setTimeout(function() { waitForChart(0); }, 2000);
   });
 })();
