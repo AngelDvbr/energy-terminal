@@ -47,7 +47,7 @@
             display: flex;
             gap: 20px;
             align-items: center;
-        }
+       }
 
         .title {
             color: #FF9900;
@@ -133,6 +133,7 @@
 
         .price-up {
             color: #00FF41;
+
         }
 
         .price-down {
@@ -1096,7 +1097,7 @@
 
             <div class="panel-card">
               <div class="panel-label">Position</div>
-              <div id="positionText" class="metric-big">Flat</div>
+              <div id="positionText" class="metric-big">Flav</div>
               <div id="pnlText"></div>
             </div>
           </div>
@@ -1365,7 +1366,8 @@
     </div>
 
     <script>
-        const POLYGON_API_KEY = "fwFztjys1rpJWfQ0iYrFg1OeAbqvE33c";
+        // Yahoo Finance — no API key needed
+        const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
         const TICKERS = ["GUSH", "DRIP", "XOP", "USO"];
 
         let state = {
@@ -1418,25 +1420,15 @@
             saveProfitPlan();
             updateProfitPlan();
             // Fire Discord alert when marking a stage as trimmed (not when un-marking)
-            if (nowDone && typeof window.sendDiscordAlert === 'function') {
+            if (nowDone && typeof window.dispatchProfitStageAlert === 'function') {
                 const s = PP_STAGES[idx];
-                const px = (state.prices || {})[ticker] || 0;
-                const pos = portfolio[ticker];
-                const pnlPct = pos && pos.avgCost > 0 ? ((px - pos.avgCost) / pos.avgCost * 100) : 0;
-                const ma9 = ((state.movingAverages || {})[ticker] || {}).MA9 || 0;
-                const stopNotes = ['Entry stop', 'Move stop to breakeven', 'Trail stop under MA9 ($' + (ma9 > 0 ? ma9.toFixed(2) : '—') + ')', 'Manage runner'];
-                window.sendDiscordAlert({ embeds: [{
-                    title: '\uD83D\uDCB8 PROFIT TRIM — ' + ticker + ' +' + s.pct + '%',
-                    description: '**Action:** ' + s.action + '\n**Price:** $' + (px > 0 ? px.toFixed(2) : '—') + '\n**P&L:** +' + pnlPct.toFixed(2) + '%',
-                    color: 65280,
-                    fields: [
-                        { name: 'Trim Size', value: s.trim + ' of position', inline: true },
-                        { name: 'Stage', value: (idx + 1) + ' of ' + PP_STAGES.length, inline: true },
-                        { name: 'Stop Update', value: stopNotes[idx], inline: false }
-                    ],
-                    timestamp: new Date().toISOString(),
-                    footer: { text: 'Energy Terminal — Profit Plan' }
-                }]});
+                // For the final stage, compute momentum on the spot
+                let runnerMode = null, mom = null;
+                if (s.final && typeof shouldKeepRunner === 'function') {
+                    mom = shouldKeepRunner(ticker);
+                    runnerMode = mom.keep ? 'RUNNER' : 'FULL_EXIT';
+                }
+                window.dispatchProfitStageAlert(ticker, idx, s, runnerMode, mom);
             }
         }
 
@@ -1459,14 +1451,14 @@
                 const pos  = portfolio[ticker];
                 const px   = state.prices[ticker];
                 const ma9  = (state.movingAverages[ticker] || {}).MA9 || 0;
-                const pnlPct = pos.avgCost > 0 ? ((px - pos.avgCost) / pos.avgCost) * 100 : 0;
+                const pnlPct = pos.avgCost > 0 ? (px - pos.avgCost) / pos.avgCost * 100 : 0;
                 const pnlCls = pnlPct >= 0 ? 'up' : 'down';
                 const pnlSign = pnlPct >= 0 ? '+' : '';
                 if (!profitPlan[ticker]) profitPlan[ticker] = [false,false,false,false];
                 const done = profitPlan[ticker];
-                
+
                 // Next incomplete stage
-                let nextIdx = done.findIndex(v=> !v);
+                let nextIdx = done.findIndex(v => !v);
 
                 // Stop label
                 let stopLabel = `Entry $${pos.avgCost.toFixed(2)}`;
@@ -1474,7 +1466,7 @@
                 if (done[1]) { stopLabel = `Breakeven $${pos.avgCost.toFixed(2)}`; stopCls = 'be'; }
                 if (done[2] && ma9 > 0) { stopLabel = `MA9 trail $${ma9.toFixed(2)}`; stopCls = 'be'; }
 
-                // Progress %: 0→+18% range
+                // Progress %: 0N��18% range
                 const prog = Math.min(100, Math.max(0, (pnlPct / 18) * 100));
 
                 // Stage rows
@@ -1503,7 +1495,7 @@
                 html += `
                 <div class="profit-plan-card">
                     <div class="pp-card-header">
-                        <span class="pp-ticker">${ticker}</span>
+                        <span class="pp-ticker">$">${ticker}</span>
                         <span class="pp-pnl ${pnlCls}">${pnlSign}${pnlPct.toFixed(2)}%</span>
                         <button class="pp-reset-btn" onclick="resetProfitPlan('${ticker}')">RESET</button>
                     </div>
@@ -1564,7 +1556,6 @@
                 return { action: 'SELL', cls: 'sell', reason: `SELL signal · ${confidence}% conf · consider exiting` };
             if (signal === 'BUY' && confidence > 50) {
                 if (pnlPct >= 30) return { action: 'TRAIL STOP', cls: 'hold', reason: `Up ${pnlPct.toFixed(1)}% — lock in gains` };
-                return { action: 'ADD MORE', cls: 'add', reason: `Strong BUY signal · ${confidence}% conf` };
             }
             if (pnlPct >= 30 && signal !== 'BUY')
                 return { action: 'TAKE PROFITS', cls: 'sell', reason: `Up ${pnlPct.toFixed(1)}% — trim position` };
@@ -1609,6 +1600,8 @@
             }
             tbody.innerHTML = rows;
             const totalPnl    = totalValue - totalCost;
+            const totalPnlPct = totalCost > 0 ? (totalPnl / totalCost) * 100 : 0;
+            const tc = tota;
             const totalPnlPct = totalCost > 0 ? (totalPnl / totalCost) * 100 : 0;
             const tc = totalPnl >= 0 ? 'price-up' : 'price-down';
             document.getElementById('portfolio-totals').innerHTML = `
@@ -1674,7 +1667,7 @@
             const rsi  = state.technicalIndicators;
             const geo  = state.geoRisk;
             const gP   = state.prices.GUSH || 0;
-            const dP  = state.prices.DRIP || 0;
+            const dP   = state.prices.DRIP || 0;
 
             // GUSH panel
             const gushPos  = portfolio['GUSH'];
@@ -1777,50 +1770,64 @@
             return prices.slice(-period).reduce((a, b) => a + b, 0) / period;
         }
 
-        async function fetchAggregates(ticker) {
-            try {
-                const today = new Date();
-                const startDate = new Date(today);
-                startDate.setDate(startDate.getDate() - 50);
-                const formatDate = (date) => date.toISOString().split('T')[0];
-                const response = await fetch(
-                    `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${formatDate(startDate)}/${formatDate(today)}?adjusted=true&sort=asc&limit=50&apiKey=${POLYGON_API_KEY}`
-                );
-                if (!response.ok) return null;
-                const data = await response.json();
-                return data.results || [];
-            } catch (error) {
-                console.error(`Error fetching aggregates for ${ticker}:`, error);
-                return null;
+        // ── Yahoo Finance — free, no key needed ───────────────────
+        async function fetchYahooChart(ticker) {
+            const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=3mo`;
+            // Try CORS proxy first, then direct (works in some environments)
+            for (const base of [CORS_PROXY + encodeURIComponent(url), url]) {
+                try {
+                    const res = await fetch(base);
+                    if (!res.ok) continue;
+                    const json = await res.json();
+                    const result = json.chart?.result?.[0];
+                    if (result) return result;
+                } catch(e) { /* try next */ }
             }
+            console.error(`[Yahoo] Could not fetch ${ticker}`);
+            return null;
         }
 
-        async function fetchPreviousClose(ticker) {
-            try {
-                const response = await fetch(
-                    `https://api.polygon.io/v2/aggs/ticker/${ticker}/prev?adjusted=true&apiKey=${POLYGON_API_KEY}`
-                );
-                if (!response.ok) return null;
-                const data = await response.json();
-                return data.results?.[0] || null;
-            } catch (error) {
-                console.error(`Error fetching previous close for ${ticker}:`, error);
-                return null;
-            }
-        }
+        // Legacy stubs — no longer called but kept to avoid any reference errors
+        async function fetchAggregates(ticker) { return null; }
+        async function fetchPreviousClose(ticker) { return null; }
+        async function fetchSnapshot(ticker) { return null; }
 
-        async function fetchSnapshot(ticker) {
-            try {
-                const response = await fetch(
-                    `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers/${ticker}?apiKey=${POLYGON_API_KEY}`
-                );
-                if (!response.ok) return null;
-                const data = await response.json();
-                return data.results || null;
-            } catch (error) {
-                console.error(`Error fetching snapshot for ${ticker}:`, error);
-                return null;
-            }
+        // ── Shared helper: parse a Yahoo chart result into state ──
+        function _applyYahooResult(ticker, result) {
+            if (!result) return false;
+            const meta   = result.meta || {};
+            const quotes = result.indicators?.quote?.[0] || {};
+            const closes = (quotes.close || []).filter(c => c != null);
+            if (!closes.length) return false;
+
+            // Current price — regularMarketPrice is real-time; fall back to last close
+            const currentPrice = meta.regularMarketPrice || closes[closes.length - 1];
+            const prevClose    = meta.chartPreviousClose || meta.previousClose || closes[closes.length - 2] || currentPrice;
+
+            state.prices[ticker] = currentPrice;
+
+            const dollarChange = currentPrice - prevClose;
+            state.changes[ticker] = {
+                dollar:  parseFloat(dollarChange.toFixed(2)),
+                percent: parseFloat(prevClose ? ((dollarChange / prevClose) * 100).toFixed(2) : 0)
+            };
+
+            state.dayHighLow[ticker] = {
+                high: meta.regularMarketDayHigh || (quotes.high || []).slice(-1)[0] || currentPrice,
+                low:  meta.regularMarketDayLow  || (quotes.low  || []).slice(-1)[0] || currentPrice
+            };
+            state.volumes[ticker] = meta.regularMarketVolume || (quotes.volume || []).slice(-1)[0] || 0;
+
+            // Indicators
+            const rsi = calculateRSI(closes, 14);
+            const { macd, signal } = calculateMACD(closes);
+            state.technicalIndicators[ticker] = { RSI: rsi, MACD: macd, MACDSignal: signal };
+            state.movingAverages[ticker] = {
+                MA9:  calculateSMA(closes, 9),
+                MA21: calculateSMA(closes, 21),
+                MA50: calculateSMA(closes, 50)
+            };
+            return true;
         }
 
         async function initializeData() {
@@ -1828,68 +1835,34 @@
             updateStatus();
 
             try {
-                const aggregatesData = {};
-                const prevCloseData = {};
-
-                for (const ticker of TICKERS) {
-                    const aggs = await fetchAggregates(ticker);
-                    aggregatesData[ticker] = aggs;
-                    const prevClose = await fetchPreviousClose(ticker);
-                    prevCloseData[ticker] = prevClose;
-                }
-
-                aggregateDataRef = aggregatesData;
-                previousCloseRef = prevCloseData;
-
-                const newTechIndicators = {};
-                const newMovingAverages = {};
+                state.technicalIndicators = {};
+                state.movingAverages = {};
                 const newPriceHistory = [];
+                let successCount = 0;
 
                 for (const ticker of TICKERS) {
-                    const aggs = aggregatesData[ticker];
-                    if (!aggs || aggs.length === 0) continue;
+                    const result = await fetchYahooChart(ticker);
+                    if (!result) continue;
 
-                    const closes = aggs.map(bar => bar.c);
-                    const rsi = calculateRSI(closes, 14);
-                    const { macd, signal } = calculateMACD(closes);
-                    const ma9 = calculateSMA(closes, 9);
-                    const ma21 = calculateSMA(closes, 21);
-                    const ma50 = calculateSMA(closes, 50);
+                    if (_applyYahooResult(ticker, result)) successCount++;
 
-                    newTechIndicators[ticker] = { RSI: rsi, MACD: macd, MACDSignal: signal };
-                    newMovingAverages[ticker] = { MA9: ma9, MA21: ma21, MA50: ma50 };
-
-                    aggs.slice(-30).forEach((bar, idx) => {
-                        if (!newPriceHistory[idx]) {
-                            newPriceHistory[idx] = { time: idx };
-                        }
-                        newPriceHistory[idx][ticker] = bar.c;
+                    // Build chart history from daily closes
+                    const quotes  = result.indicators?.quote?.[0] || {};
+                    const closes  = (quotes.close || []).filter(c => c != null);
+                    closes.slice(-30).forEach((c, idx) => {
+                        if (!newPriceHistory[idx]) newPriceHistory[idx] = { time: idx };
+                        newPriceHistory[idx][ticker] = c;
                     });
                 }
 
-                state.technicalIndicators = newTechIndicators;
-                state.movingAverages = newMovingAverages;
                 state.priceHistory = newPriceHistory;
-
-                // Populate prices from previous close (snapshot endpoint requires paid plan)
-                for (const ticker of TICKERS) {
-                    const pc = prevCloseData[ticker];
-                    if (pc) {
-                        state.prices[ticker] = pc.c;
-                        state.dayHighLow[ticker] = { high: pc.h, low: pc.l };
-                        state.volumes[ticker] = pc.v;
-                        const chg = pc.c - pc.o;
-                        state.changes[ticker] = {
-                            dollar: parseFloat(chg.toFixed(2)),
-                            percent: parseFloat(pc.o ? ((chg / pc.o) * 100).toFixed(2) : 0)
-                        };
-                    }
-                }
-
-                state.dataStatus = "LIVE";
+                state.dataStatus   = successCount > 0 ? "LIVE" : "ERROR";
                 updateStatus();
-                updateUI();
-                updateChart();
+                if (successCount > 0) {
+                    updateUI();
+                    updateChart();
+                    calculateSignals();
+                }
             } catch (error) {
                 console.error("Error initializing data:", error);
                 state.dataStatus = "ERROR";
@@ -1901,40 +1874,13 @@
             if (state.dataStatus !== "LIVE" && state.dataStatus !== "STALE") return;
 
             let successCount = 0;
-            for (let i = 0; i < TICKERS.length; i++) {
-                const ticker = TICKERS[i];
-                await new Promise(resolve => setTimeout(resolve, i * 250));
-
-                const snapshot = await fetchSnapshot(ticker);
-                if (snapshot && snapshot.lastTrade) {
-                    const currentPrice = snapshot.lastTrade.p;
-                    const prevClose = previousCloseRef[ticker];
-
-                    state.prices[ticker] = currentPrice;
-
-                    if (prevClose) {
-                        const dollarChange = currentPrice - prevClose.c;
-                        const percentChange = (dollarChange / prevClose.c) * 100;
-                        state.changes[ticker] = {
-                            dollar: parseFloat(dollarChange.toFixed(2)),
-                            percent: parseFloat(percentChange.toFixed(2))
-                        };
-                    }
-
-                    if (snapshot.day) {
-                        state.dayHighLow[ticker] = {
-                            high: snapshot.day.h || currentPrice,
-                            low: snapshot.day.l || currentPrice
-                        };
-                        state.volumes[ticker] = snapshot.day.v || 0;
-                    }
-
-                    successCount++;
-                }
+            for (const ticker of TICKERS) {
+                const result = await fetchYahooChart(ticker);
+                if (_applyYahooResult(ticker, result)) successCount++;
             }
 
             state.lastUpdateTime = new Date().toLocaleTimeString();
-            state.dataStatus = successCount === TICKERS.length ? "LIVE" : "STALE";
+            state.dataStatus = successCount === TICKERS.length ? "LIVE" : (successCount > 0 ? "STALE" : "ERROR");
             updateUI();
             updateChart();
             calculateSignals();
@@ -2102,14 +2048,14 @@
           // Prefer bearish ETF stage when market is bearish; otherwise default to GUSH
           const dominant = bearish ? dripStage : gushStage;
 
-          const STAGE_LABELS = {
+          const STACE_LABELS = {
             EARLY_BULLISH: '⚡ EARLY BULLISH WATCH',
             EARLY_BEARISH: '⚡ EARLY BEARISH WATCH',
             TRIGGERED:     '🔥 TRIGGERED',
             CONFIRMED:     '✅ CONFIRMED',
             NO_TRADE:      '— NO TRADE'
           };
-          const STAGE_CLS = {
+          const STACE_CLS = {
             EARLY_BULLISH: 'early-bull',
             EARLY_BEARISH: 'early-bear',
             TRIGGERED:     'triggered',
@@ -2117,7 +2063,7 @@
             NO_TRADE:      'notrade'
           };
           const STAGE_ACTIONS = {
-            EARLY_BULLISH: 'WATCHLIST — USO & XOP bullish. Wait for GUSH to break above MA8.',
+            EARLY_BULLISH: 'WATCHLIST — USO & XOP bullish. Wait for GUSH to break above MA9.',
             EARLY_BEARISH: 'WATCHLIST — USO & XOP bearish. Wait for DRIP to break above MA9.',
             TRIGGERED:     score >= 3 ? 'NEAR ENTRY — ETF triggered. Confirm momentum before sizing in.' : 'CAUTION — ETF triggered but momentum weak. Wait for RSI > 50.',
             CONFIRMED:     score === 4 ? 'BUY — All 4 checks pass. Enter position, stop under MA9.' : 'BUY SIGNAL — 3/4 checks pass. Reduce size until full confirmation.',
@@ -2391,10 +2337,10 @@
         setInterval(updateSnapshots, 10000);
         setInterval(updateGeoRisk, 15000);
         setInterval(() => {
-           const events = [
+            const events = [
                 { type: "BUY", msg: "BUY signal generated" },
                 { type: "SELL", msg: "SELL signal generated" },
-                { type: "TECHMNICAL", msg: "RSI oversold condition detected" },
+                { type: "TECHNICAL", msg: "RSI oversold condition detected" },
                 { type: "GEO", msg: "Geopolitical risk increased" },
                 { type: "CONFIRMATION", msg: "XOP confirmation active" },
                 { type: "DIVERGENCE", msg: "Correlation divergence detected" }
@@ -2466,28 +2412,20 @@ function updateEnergyAISignal(d){
 <script id="discord-alerts">
 (function() {
 
-  // ── CONFIG ────────────────────────────────────────────────
-  // Paste your Discord webhook URL here:
-  var DISCORD_WEBHOOK = 'YOUR_DISCORD_WEBHOOK_URL_HERE';
+  // ════════════════════════════════════════════════════════════════
+  // CONFIG — edit these values
+  // ════════════════════════════════════════════════════════════════
+  var DISCORD_WEBHOOK   = 'https://discord.com/api/webhooks/1490601343499374763/hv8_m7UgRViZKUZO-iTZl2eXdFpta-YkkMgRaSZmsPlvd6q6AuG9e6Zaq2ak_sf1l9wV';
+  var CUT_LOSS_PCT      = -8;    // P&L % that triggers cut-loss alert
+  var MIN_CONFIDENCE    = 15;    // minimum score-confidence to send BUY alert
+  var DEDUP_BUY_MS      = 30 * 60 * 1000;       // 30 min — BUY / LOW CONFIDENCE
+  var DEDUP_NOTRADE_MS  =  4 * 60 * 60 * 1000;  //  4 hrs — NO TRADE
+  var DEDUP_DATAFAIL_MS = 15 * 60 * 1000;        // 15 min — DATA FAILED
+  var DEDUP_SWITCH_MS   = 30 * 60 * 1000;        // 30 min — SWITCH signals
 
-  // Minimum confidence to send an alert (same scale as gs.confidence / ds.confidence)
-  // Default 15 = only fires at the existing BUY threshold. Raise to 20+ for fewer alerts.
-  var MIN_CONFIDENCE = 15;
-
-  // Don't repeat the same alert key within this window (ms)
-  var DEDUP_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
-
-  // ── DEDUP STORE ───────────────────────────────────────────
-  var _sentAlerts = {};
-
-  function _isDuplicate(key) {
-    var last = _sentAlerts[key];
-    return last ? (Date.now() - last) < DEDUP_WINDOW_MS : false;
-  }
-  function _markSent(key) { _sentAlerts[key] = Date.now(); }
-
-  // ── CORE SENDER ───────────────────────────────────────────
-  // Swap this function body when moving to a backend proxy
+  // ════════════════════════════════════════════════════════════════
+  // CORE SENDER  (swap body here for a backend proxy if needed)
+  // ════════════════════════════════════════════════════════════════
   window.sendDiscordAlert = function(payload) {
     if (!DISCORD_WEBHOOK || DISCORD_WEBHOOK === 'YOUR_DISCORD_WEBHOOK_URL_HERE') {
       console.warn('[Discord] No webhook set — paste your URL into DISCORD_WEBHOOK.');
@@ -2499,157 +2437,314 @@ function updateEnergyAISignal(d){
       body: JSON.stringify(payload)
     }).then(function(r) {
       if (!r.ok) console.error('[Discord] Error:', r.status, r.statusText);
-      else console.log('[Discord] Sent ✓');
+      else        console.log('[Discord] Sent ✓');
     }).catch(function(e) { console.error('[Discord] Failed:', e.message); });
   };
 
-  // ── HELPERS ───────────────────────────────────────────────
+  // ════════════════════════════════════════════════════════════════
+  // DEDUP STORE  — keyed by alert type + ticker
+  // ════════════════════════════════════════════════════════════════
+  var _sent = {};   // { key: timestampMs }
+
+  function _isDup(key, windowMs) {
+    var t = _sent[key];
+    return t ? (Date.now() - t) < windowMs : false;
+  }
+  function _mark(key) { _sent[key] = Date.now(); }
+
+  // Per-trade state — reset when avgCost changes (new trade detected)
+  var _tradeState = {};
+
+  function _getTrade(ticker) {
+    if (!_tradeState[ticker]) _tradeState[ticker] = { lastAvgCost: null, cutLossFired: false, lastRegime: null };
+    return _tradeState[ticker];
+  }
+
+  function _checkNewTrade(ticker) {
+    var ts  = _getTrade(ticker);
+    var pos = (typeof portfolio !== 'undefined') ? portfolio[ticker] : null;
+    var avg = pos ? pos.avgCost : null;
+    if (avg && ts.lastAvgCost !== null && Math.abs(ts.lastAvgCost - avg) > 0.005) {
+      ts.cutLossFired = false;   // reset per-trade flags on new entry
+    }
+    ts.lastAvgCost = avg;
+  }
+
+  // ════════════════════════════════════════════════════════════════
+  // DATA FAILURE TRACKING
+  // ════════════════════════════════════════════════════════════════
+  var _dataFailCount = 0;
+
+  // ════════════════════════════════════════════════════════════════
+  // HELPERS
+  // ════════════════════════════════════════════════════════════════
+  var C = { BUY: 36865, SELL: 16723249, WARN: 16751872, SWITCH: 65535, INFO: 8421504, RUNNER: 16776960, EXIT: 16711680 };
+
   function _regime() {
     try {
-      var mas = state.movingAverages || {};
-      var p   = state.prices || {};
-      var uA  = (p.USO || 0) > ((mas.USO || {}).MA9 || 0);
+      var mas = state.movingAverages || {}, p = state.prices || {};
+      var uA  = (p.USO || 0) > ((mas.USO || {}).MI9 || 0);
       var xA  = (p.XOP || 0) > ((mas.XOP || {}).MA9 || 0);
-      return (uA && xA) ? 'BULLISH' : (!uA && !xA) ? 'BEARISH' : 'CHOP';
+      if (uA && xA)   return 'BULLISH 🟢';
+      if (!uA && !xA) return 'BEARISH 🔴';
+      return 'MIXED / CHOP ⚪';
     } catch(e) { return '—'; }
   }
 
-  function _checklistSummary() {
-    var badge  = document.getElementById('checklistBadge');
-    var signal = document.getElementById('checklistSignal');
-    return (signal ? signal.textContent : '?') + '  ' + (badge ? badge.textContent : '?');
-  }
-
   function _px(ticker) {
-    try { var p = state.prices[ticker]; return p ? '$' + p.toFixed(2) : '—'; }
-    catch(e) { return '—'; }
+    try { var p = state.prices[ticker]; return p ? '$' + p.toFixed(2) : '—'; } catch(e) { return '—'; }
   }
 
-  // Discord embed colors (decimal)
-  var C = { BUY: 36865, SELL: 16723249, SWITCH: 65535, WARN: 16751872 };
+  function _pnl(ticker) {
+    try {
+      var pos = portfolio[ticker], px = state.prices[ticker];
+      if (!pos || !px || !pos.avgCost) return null;
+      return ((px - pos.avgCost) / pos.avgCost) * 100;
+    } catch(e) { return null; }
+  }
 
-  function _embed(title, desc, color, fields, footer) {
+  function _pnlStr(pct) {
+    if (pct === null) return '—';
+    return (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+  }
+
+  function _conf(ticker) {
+    try { return (state.signals[ticker] || {}).confidence || 0; } catch(e) { return 0; }
+  }
+
+  function _score(ticker) {
+    try { return (state.signals[ticker] || {}).score || 0; } catch(e) { return 0; }
+  }
+
+  function _checklistScore() {
+    try { var el = document.getElementById('checklistScore'); return el ? el.textContent : '—'; } catch(e) { return '—'; }
+  }
+
+  function _safeStage(ticker) {
+    try { return (typeof getSignalStage === 'function') ? getSignalStage(ticker) : '—'; } catch(e) { return '—'; }
+  }
+
+  function _embed(title, desc, color, fields) {
     return { embeds: [{ title: title, description: desc, color: color,
       timestamp: new Date().toISOString(),
-      footer: { text: footer || 'Energy Terminal' },
+      footer: { text: 'Energy Terminal — angeldvbr.github.io/energy-terminal' },
       fields: (fields || []).map(function(f) {
-        return { name: f[0], value: String(f[1]), inline: true };
+        return { name: f[0], value: String(f[1]), inline: f[2] !== false };
       })
     }]};
   }
 
-  // ── ALERT BUILDERS ────────────────────────────────────────
-  function alertBuy(ticker, conf, score) {
+  // ════════════════════════════════════════════════════════════════
+  // ALERT BUILDERS — one per alert type
+  // ════════════════════════════════════════════════════════════════
+
+  // 1. BUY GUSH / BUY DRIP — fires on CONFIRMED stage
+  function alertBuy(ticker) {
     var key = 'BUY_' + ticker;
-    if (_isDuplicate(key) || conf < MIN_CONFIDENCE) return;
-    _markSent(key);
-    var emoji = ticker === 'GUSH' ? '🟢' : '🔴';
+    if (_isDup(key, DEDUP_BUY_MS)) return;
+    _mark(key);
+    var emoji  = ticker === 'GUSH' ? '🟢' : '🔴';
+    var action = ticker === 'GUSH'
+      ? 'Consider entering GUSH. All 3 conditions confirmed: price > MA9, RSI > 50, MACD positive.'
+      : 'Consider entering DRIP. All 3 conditions confirmed: price > MA9, RSI > 50, MACD positive.';
     window.sendDiscordAlert(_embed(
-      emoji + '  BUY ' + ticker,
-      '**Strong buy signal.** All conditions aligned.',
+      emoji + '  BUY ' + ticker + ' — SIGNAL CONFIRMED',
+      '**' + action + '**',
       C.BUY,
-      [['💰 Price', _px(ticker)], ['📊 Regime', _regime()],
-       ['🎯 Confidence', conf + '%'], ['📈 Score', score + '/100'],
-       ['✅ Checklist', _checklistSummary()]],
-      'Energy Terminal • min conf: ' + MIN_CONFIDENCE + '%'
+      [['📈 Ticker', ticker], ['💰 Price', _px(ticker)], ['📊 Regime', _regime()],
+       ['🎯 Confidence', _conf(ticker) + '%'], ['📋 Score', _score(ticker) + '/100'],
+       ['✅ Checklist', _checklistScore()]]
     ));
   }
 
-  function alertSell(ticker, conf, score) {
-    var key = 'SELL_' + ticker;
-    if (_isDuplicate(key) || conf < MIN_CONFIDENCE) return;
-    _markSent(key);
+  // 2. NO TRADE — max once per 4 hours
+  function alertNoTrade() {
+    var key = 'NO_TRADE';
+    if (_isDup(key, DEDUP_NOTRADE_MS)) return;
+    _mark(key);
     window.sendDiscordAlert(_embed(
-      '🔻  CUT LOSS — ' + ticker,
-      'Signal flipped bearish. Consider reducing or exiting.',
+      '⚪  NO TRADE — STAND ASIDE',
+      '**No clear directional edge on either GUSH or DRIP.** Keep cash. Wait for regime confirmation.',
+      C.INFO,
+      [['📊 Regime', _regime()], ['GUSH Stage', _safeStage('GUSH')], ['DRIP Stage', _safeStage('DRIP')]]
+    ));
+  }
+
+  // 3. TAKE PROFIT +4% / +6% / +8% — called from dispatchProfitStageAlert
+  function alertTakeProfit(ticker, stagePct, stageIdx) {
+    var pnl  = _pnl(ticker);
+    var msgs = { 4: 'Trim 25% of position. Move stop to entry.',
+                 6: 'Trim another 25%. Move stop to breakeven.',
+                 8: 'Trim another 25%. Trail stop under MA9.' };
+    window.sendDiscordAlert(_embed(
+      '💸  TAKE PROFIT ' + ticker + ' +' + stagePct + '% — SELL 25%',
+      '**' + (msgs[stagePct] || 'Trim 25% of position.') + '**',
       C.SELL,
-      [['💰 Price', _px(ticker)], ['📊 Regime', _regime()],
-       ['🎯 Confidence', conf + '%'], ['📉 Score', score + '/100'],
-       ['✅ Checklist', _checklistSummary()]],
-      'Energy Terminal'
+      [['📈 Ticker', ticker], ['💰 Price', _px(ticker)], ['📊 P&L', _pnlStr(pnl)],
+       ['🎯 Stage', (stageIdx + 1) + ' of 4'], ['📊 Regime', _regime()], ['🎯 Confidence', _conf(ticker) + '%']]
     ));
   }
 
-  function alertTakeProfit(ticker, pnl, price) {
-    var key = 'TP_' + ticker + '_' + Math.round(pnl / 5);
-    if (_isDuplicate(key)) return;
-    _markSent(key);
+  // 4. FINAL ACTION +10% — KEEP RUNNER
+  function alertKeepRunner(ticker, momScore) {
+    var pnl = _pnl(ticker);
     window.sendDiscordAlert(_embed(
-      '💸  TAKE PROFIT — ' + ticker,
-      'Position significantly in profit. Consider locking in gains.',
-      C.BUY,
-      [['💰 Price', '$' + price.toFixed(2)], ['📈 P&L', '+' + pnl.toFixed(1) + '%'],
-       ['📊 Regime', _regime()], ['✅ Checklist', _checklistSummary()]],
-      'Energy Terminal • Take Profit'
+      '🏃  FINAL ACTION ' + ticker + ' +10% — KEEP RUNNER',
+      '**Momentum strong (' + momScore + '/5 conditions met).** Hold the last 25% as a runner. Trail stop under MA9.',
+      C.RUNNER,
+      [['📈 Ticker', ticker], ['💰 Price', _px(ticker)], ['📊 P&L', _pnlStr(pnl)],
+       ['🔥 Momentum', momScore + '/5 conditions'], ['📊 Regime', _regime()], ['🎯 Action', 'Trail stop under MA9']]
     ));
   }
 
-  function alertCutLoss(ticker, pnl, price) {
-    var key = 'CL_' + ticker + '_' + Math.round(pnl / 5);
-    if (_isDuplicate(key)) return;
-    _markSent(key);
+  // 5. FINAL ACTION +10% — EXIT FULLY
+  function alertExitFully(ticker, momScore) {
+    var pnl = _pnl(ticker);
     window.sendDiscordAlert(_embed(
-      '🛑  STOP LOSS — ' + ticker,
-      'Hit stop threshold. Protect your capital.',
+      '🚪  FINAL ACTION ' + ticker + ' +10% — EXIT FULLY',
+      '**Momentum fading (' + momScore + '/5 conditions met).** Close the remaining 25% now. Do not hold the runner.',
+      C.EXIT,
+      [['📈 Ticker', ticker], ['💰 Price', _px(ticker)], ['📊 P&L', _pnlStr(pnl)],
+       ['⚠️ Momentum', momScore + '/5 conditions'], ['📊 Regime', _regime()], ['🎯 Action', 'Close full remaining position']]
+    ));
+  }
+
+  // 6. CUT LOSS — once per trade, threshold at CUT_LOSS_PCT
+  function alertCutLoss(ticker) {
+    var ts = _getTrade(ticker);
+    if (ts.cutLossFired) return;
+    ts.cutLossFired = true;
+    var pnl = _pnl(ticker);
+    window.sendDiscordAlert(_embed(
+      '🛑  CUT LOSS — ' + ticker + ' ' + _pnlStr(pnl),
+      '**Position is down past ' + Math.abs(CUT_LOSS_PCT) + '%.** Protect capital. Consider reducing or exiting fully.',
       C.SELL,
-      [['💰 Price', '$' + price.toFixed(2)], ['📉 P&L', pnl.toFixed(1) + '%'],
-       ['📊 Regime', _regime()], ['✅ Checklist', _checklistSummary()]],
-      'Energy Terminal • Stop Loss'
+      [['📈 Ticker', ticker], ['💰 Price', _px(ticker)], ['📉 P&L', _pnlStr(pnl)],
+       ['📊 Regime', _regime()], ['⚠️ Threshold', CUT_LOSS_PCT + '% hit'], ['🎯 Action', 'Reduce or close position']]
     ));
   }
 
+  // 7. SWITCH GUSH → DRIP / DRIP → GUSH — fires on regime flip only
   function alertSwitch(from, to) {
     var key = 'SW_' + from + '_' + to;
-    if (_isDuplicate(key)) return;
-    _markSent(key);
+    if (_isDup(key, DEDUP_SWITCH_MS)) return;
+    _mark(key);
     window.sendDiscordAlert(_embed(
-      '🔄  SWITCH — ' + from + ' → ' + to,
-      'Regime flip. Consider rotating position.',
+      '🔄  SWITCH ' + from + ' → ' + to + ' — REGIME FLIP',
+      '**Market regime has reversed.** If you hold ' + from + ', consider closing and rotating into ' + to + '.',
       C.SWITCH,
-      [['↩️ Exit', from + ' ' + _px(from)], ['↪️ Enter', to + ' ' + _px(to)],
-       ['📊 Regime', _regime()], ['✅ Checklist', _checklistSummary()]],
-      'Energy Terminal • Switch Signal'
+      [['↩️ Exit', from + '  ' + _px(from)], ['↪️ Enter', to + '  ' + _px(to)],
+       ['📊 Regime', _regime()], ['🎯 Action', 'Rotate from ' + from + ' to ' + to]]
     ));
   }
 
-  // ── HOOK INTO checkAlerts() ───────────────────────────────
+  // 8. LIVE DATA FAILED — after 2 consecutive failures, silenced 15 min
+  function alertDataFailed() {
+    var key = 'DATA_FAIL';
+    if (_isDup(key, DEDUP_DATAFAIL_MS)) return;
+    _mark(key);
+    window.sendDiscordAlert(_embed(
+      '⚠️  LIVE DATA FAILED — PRICES STALE',
+      '**Price feed returned null or zero for 2+ consecutive cycles.** Do not trade on stale data.',
+      C.WARN,
+      [['Status', (typeof state !== 'undefined') ? (state.dataStatus || '—') : '—'],
+       ['GUSH Price', _px('GUSH')], ['DRIP Price', _px('DRIP')],
+       ['⚠️ Action', 'Verify data feed before acting']]
+    ));
+  }
+
+  // 9. SIGNAL LOW CONFIDENCE — TRIGGERED but not yet CONFIRMED
+  function alertLowConfidence(ticker) {
+    var key = 'LOWCONF_' + ticker;
+    if (_isDup(key, DEDUP_BUY_MS)) return;
+    _mark(key);
+    window.sendDiscordAlert(_embed(
+      '🟡  LOW CONFIDENCE — ' + ticker + ' TRIGGERED (NOT CONFIRMED)',
+      '**ETF broke above MA9 but RSI or MACD not yet aligned.** Do not enter full size. Wait for CONFIRMED stage.',
+      C.WARN,
+      [['📈 Ticker', ticker], ['💰 Price', _px(ticker)], ['📊 Stage', 'TRIGGERED (partial)'],
+       ['📊 Regime', _regime()], ['🎯 Confidence', _conf(ticker) + '%'], ['⚠️ Action', 'Wait — do not enter yet']]
+    ));
+  }
+
+  // ════════════════════════════════════════════════════════════════
+  // PROFIT STAGE DISPATCHER
+  // Called from runProfitStageAutoCheck() when a stage fires.
+  // profitAutoState already guarantees once-per-trade.
+  // ════════════════════════════════════════════════════════════════
+  window.dispatchProfitStageAlert = function(ticker, stageIdx, stage, runnerMode, mom) {
+    if (stage.final) {
+      var momScore = mom ? mom.score : 0;
+      if (runnerMode === 'RUNNER') alertKeepRunner(ticker, momScore);
+      else                         alertExitFully(ticker, momScore);
+    } else {
+      alertTakeProfit(ticker, stage.pct, stageIdx);
+    }
+  };
+
+  // ════════════════════════════════════════════════════════════════
+  // MAIN CHECKER — wraps checkAlerts()
+  // ════════════════════════════════════════════════════════════════
   function _dcCheckAlerts() {
-    // Run original logic first
     if (window._origCheckAlerts) window._origCheckAlerts();
+    if (typeof state === 'undefined') return;
 
-    if (typeof state === 'undefined' || !state.signals) return;
-    var gs = state.signals.GUSH || {};
-    var ds = state.signals.DRIP || {};
+    // Data failure detection
+    var gPx = (state.prices || {}).GUSH;
+    var dPx = (state.prices || {}).DRIP;
+    if (!gPx || !dPx || gPx === 0 || dPx === 0) {
+      _dataFailCount++;
+      if (_dataFailCount >= 2) alertDataFailed();
+    } else {
+      _dataFailCount = 0;
+    }
 
-    if (gs.signal === 'BUY')  alertBuy('GUSH',  gs.confidence, gs.score);
-    if (gs.signal === 'SELL') alertSell('GUSH', gs.confidence, gs.score);
-    if (ds.signal === 'BUY')  alertBuy('DRIP',  ds.confidence, ds.score);
-    if (ds.signal === 'SELL') alertSell('DRIP', ds.confidence, ds.score);
+    if (!state.signals) return;
 
-    if (gs.signal === 'BUY'  && ds.signal === 'SELL') alertSwitch('DRIP', 'GUSH');
-    if (ds.signal === 'BUY'  && gs.signal === 'SELL') alertSwitch('GUSH', 'DRIP');
+    // Reset per-trade flags on new trade detection
+    _checkNewTrade('GUSH');
+    _checkNewTrade('DRIP');
 
+    // Entry signals — use getSignalStage() for precision
+    var gStage = _safeStage('GUSH');
+    var dStage = _safeStage('DRIP');
+
+    if (gStage === 'CONFIRMED')  alertBuy('GUSH');
+    if (dStage === 'CONFIRMED')  alertBuy('DRIP');
+    if (gStage === 'TRIGGERED')  alertLowConfidence('GUSH');
+    if (dStage === 'TRIGGERED')  alertLowConfidence('DRIP');
+    if (gStage === 'NO_TRADE' && dStage === 'NO_TRADE') alertNoTrade();
+
+    // Regime flip → SWITCH alert
+    var currentRegime = _regime();
+    var gts = _getTrade('GUSH');
+    if (gts.lastRegime && gts.lastRegime !== currentRegime) {
+      if (currentRegime.includes('BEARISH') && typeof portfolio !== 'undefined' && portfolio['GUSH']) alertSwitch('GUSH', 'DRIP');
+      if (currentRegime.includes('BULLISH') && typeof portfolio !== 'undefined' && portfolio['DRIP']) alertSwitch('DRIP', 'GUSH');
+    }
+    gts.lastRegime = currentRegime;
+
+    // Cut loss check
     if (typeof portfolio !== 'undefined') {
       ['GUSH', 'DRIP'].forEach(function(t) {
-        var pos = portfolio[t]; var px = (state.prices || {})[t];
-        if (!pos || !px) return;
-        var pnl = ((px - pos.avgCost) / pos.avgCost) * 100;
-        if (pnl <= -15) alertCutLoss(t, pnl, px);
-        else if (pnl >= 30) alertTakeProfit(t, pnl, px);
+        var pnl = _pnl(t);
+        if (pnl !== null && pnl <= CUT_LOSS_PCT) alertCutLoss(t);
       });
     }
   }
 
-  // Override after page scripts load
+  // ════════════════════════════════════════════════════════════════
+  // HOOK — override checkAlerts() after page scripts load
+  // ════════════════════════════════════════════════════════════════
   setTimeout(function() {
     if (typeof checkAlerts === 'function' && !window._origCheckAlerts) {
       window._origCheckAlerts = checkAlerts;
-      window.checkAlerts = _dcCheckAlerts;
+      window.checkAlerts      = _dcCheckAlerts;
       console.log('[Discord] Hooked into checkAlerts() ✓');
     }
   }, 0);
 
-  console.log('[Discord] Integration loaded. Set DISCORD_WEBHOOK to activate.');
+  console.log('[Discord] Integration v2 loaded. Set DISCORD_WEBHOOK to activate.');
 
 })();
 </script>
